@@ -7,6 +7,7 @@ export const RIDE_PROVIDERS: readonly RideProviderMeta[] = [
     name: 'Rapido',
     shortName: 'Rapido',
     tagline: 'Bike taxis & autos',
+    categories: ['Bike', 'Auto', 'Cab'],
     brandColor: '#F5C518',
   },
   {
@@ -14,6 +15,7 @@ export const RIDE_PROVIDERS: readonly RideProviderMeta[] = [
     name: 'Uber',
     shortName: 'Uber',
     tagline: 'Cabs, moto & auto',
+    categories: ['Moto', 'Auto', 'Go', 'Premier'],
     brandColor: '#111111',
   },
   {
@@ -21,6 +23,7 @@ export const RIDE_PROVIDERS: readonly RideProviderMeta[] = [
     name: 'Ola',
     shortName: 'Ola',
     tagline: 'Cabs & autos',
+    categories: ['Bike', 'Auto', 'Mini', 'Prime'],
     brandColor: '#1E9E4A',
   },
 ] as const;

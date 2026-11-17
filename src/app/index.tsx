@@ -1,96 +1,109 @@
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Keyboard, StyleSheet, View } from 'react-native';
 
-import { AppText, Card, ProviderChip, Screen } from '@/components';
-import { APP_NAME, APP_TAGLINE, RIDE_PROVIDERS } from '@/constants';
-import { isApiConfigured } from '@/config/env';
-import { colors, radius, spacing } from '@/theme';
+import { BottomNav, Screen } from '@/components';
+import {
+  CurrentLocationButton,
+  HomeHeader,
+  ProviderSection,
+  RecentDestinations,
+  RideSearchCard,
+} from '@/components/home';
+import { RECENT_DESTINATIONS } from '@/constants';
+import { colors, spacing } from '@/theme';
+import type { Place } from '@/types';
 
 export default function HomeScreen() {
+  const [pickup, setPickup] = useState('');
+  const [destination, setDestination] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const clearFeedback = () => {
+    setError(null);
+    setNotice(null);
+  };
+
+  const handlePickupChange = (value: string) => {
+    setPickup(value);
+    clearFeedback();
+  };
+
+  const handleDestinationChange = (value: string) => {
+    setDestination(value);
+    clearFeedback();
+  };
+
+  const handleSwap = () => {
+    setPickup(destination);
+    setDestination(pickup);
+    clearFeedback();
+  };
+
+  const handleSelectRecent = (place: Place) => {
+    setDestination(place.name);
+    clearFeedback();
+  };
+
+  const handleCompare = () => {
+    const missingPickup = pickup.trim().length === 0;
+    const missingDestination = destination.trim().length === 0;
+
+    if (missingPickup || missingDestination) {
+      if (missingPickup && missingDestination) {
+        setError('Add a pickup and a destination to compare rides.');
+      } else if (missingPickup) {
+        setError('Add a pickup location to continue.');
+      } else {
+        setError('Add a destination to continue.');
+      }
+      setNotice(null);
+      return;
+    }
+
+    Keyboard.dismiss();
+    setError(null);
+    setNotice('Route ready. Fare comparison arrives in the next update.');
+  };
+
   return (
-    <Screen contentStyle={styles.content}>
-      <View style={styles.hero}>
-        <AppText variant="label">Fair fares, every ride</AppText>
-        <AppText variant="display" style={styles.title}>
-          {APP_NAME}
-        </AppText>
-        <AppText variant="bodyMuted" style={styles.tagline}>
-          {APP_TAGLINE}
-        </AppText>
-      </View>
+    <View style={styles.root}>
+      <Screen contentStyle={styles.content}>
+        <HomeHeader />
 
-      <View style={styles.providers}>
-        {RIDE_PROVIDERS.map((provider) => (
-          <ProviderChip key={provider.id} provider={provider} />
-        ))}
-      </View>
+        <RideSearchCard
+          pickup={pickup}
+          destination={destination}
+          error={error}
+          notice={notice}
+          onChangePickup={handlePickupChange}
+          onChangeDestination={handleDestinationChange}
+          onSwap={handleSwap}
+          onCompare={handleCompare}
+        />
 
-      <Card style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View style={styles.accentBar} />
-          <AppText variant="heading">Ready to compare</AppText>
-        </View>
-        <AppText variant="bodyMuted" style={styles.cardBody}>
-          The project shell is set up: routing, theme tokens and typed provider
-          data. Fare search and trip comparison arrive in the next stage.
-        </AppText>
+        <CurrentLocationButton />
 
-        <View style={styles.metaRow}>
-          <AppText variant="caption">Backend</AppText>
-          <AppText variant="caption" style={styles.metaValue}>
-            {isApiConfigured ? 'Connected' : 'Not configured'}
-          </AppText>
-        </View>
-      </Card>
-    </Screen>
+        <RecentDestinations
+          places={RECENT_DESTINATIONS}
+          onSelect={handleSelectRecent}
+        />
+
+        <ProviderSection />
+      </Screen>
+
+      <BottomNav />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   content: {
-    paddingTop: spacing['2xl'],
+    paddingTop: spacing.lg,
     gap: spacing['2xl'],
-  },
-  hero: {
-    gap: spacing.sm,
-  },
-  title: {
-    marginTop: spacing.xs,
-  },
-  tagline: {
-    maxWidth: 320,
-  },
-  providers: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  card: {
-    gap: spacing.md,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  accentBar: {
-    width: 4,
-    height: 22,
-    borderRadius: radius.pill,
-    backgroundColor: colors.accent,
-  },
-  cardBody: {
-    maxWidth: 420,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: spacing.xs,
-    paddingTop: spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-  },
-  metaValue: {
-    color: colors.text,
   },
 });
