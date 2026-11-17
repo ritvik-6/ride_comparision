@@ -10,3 +10,4 @@ export {
   RIDE_PROVIDERS,
   getProviderMeta,
 } from './providers';
+export { RECENT_DESTINATIONS } from './destinations';

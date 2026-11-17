@@ -6,6 +6,8 @@ export interface RideProviderMeta {
   name: string;
   shortName: string;
   tagline: string;
+  /** Ride categories the provider is known for, e.g. "Bike", "Auto". */
+  categories: readonly string[];
   /** Used for provider identity accents, not for app chrome. */
   brandColor: string;
 }
