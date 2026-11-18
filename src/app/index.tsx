@@ -9,13 +9,14 @@ import {
   RecentDestinations,
   RideSearchCard,
 } from '@/components/home';
-import { RECENT_DESTINATIONS } from '@/constants';
+import { HYDERABAD_LOCATIONS, RECENT_DESTINATIONS } from '@/constants';
+import { useRouteSearch } from '@/hooks/useRouteSearch';
 import { colors, spacing } from '@/theme';
-import type { Place } from '@/types';
+import type { LocationField, Place } from '@/types';
+import { validateRoute } from '@/utils/routeValidation';
 
 export default function HomeScreen() {
-  const [pickup, setPickup] = useState('');
-  const [destination, setDestination] = useState('');
+  const route = useRouteSearch(HYDERABAD_LOCATIONS);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -24,46 +25,44 @@ export default function HomeScreen() {
     setNotice(null);
   };
 
-  const handlePickupChange = (value: string) => {
-    setPickup(value);
+  const handleChangeText = (field: LocationField, value: string) => {
+    route.changeText(field, value);
     clearFeedback();
   };
 
-  const handleDestinationChange = (value: string) => {
-    setDestination(value);
-    clearFeedback();
-  };
-
-  const handleSwap = () => {
-    setPickup(destination);
-    setDestination(pickup);
+  const handleSelectPlace = (field: LocationField, place: Place) => {
+    route.selectPlace(field, place);
     clearFeedback();
   };
 
   const handleSelectRecent = (place: Place) => {
-    setDestination(place.name);
+    route.selectPlace('destination', place);
+    clearFeedback();
+  };
+
+  const handleSwap = () => {
+    route.swap();
     clearFeedback();
   };
 
   const handleCompare = () => {
-    const missingPickup = pickup.trim().length === 0;
-    const missingDestination = destination.trim().length === 0;
+    const message = validateRoute(route.pickup, route.destination);
 
-    if (missingPickup || missingDestination) {
-      if (missingPickup && missingDestination) {
-        setError('Add a pickup and a destination to compare rides.');
-      } else if (missingPickup) {
-        setError('Add a pickup location to continue.');
-      } else {
-        setError('Add a destination to continue.');
-      }
+    if (message) {
       setNotice(null);
+      setError(message);
       return;
     }
 
+    const origin = route.pickup.place?.name;
+    const target = route.destination.place?.name;
+
+    route.dismissSuggestions();
     Keyboard.dismiss();
     setError(null);
-    setNotice('Route ready. Fare comparison arrives in the next update.');
+    setNotice(
+      `Route ready: ${origin} to ${target}. Fare comparison arrives in the next update.`,
+    );
   };
 
   return (
@@ -72,12 +71,15 @@ export default function HomeScreen() {
         <HomeHeader />
 
         <RideSearchCard
-          pickup={pickup}
-          destination={destination}
+          pickup={route.pickup}
+          destination={route.destination}
           error={error}
           notice={notice}
-          onChangePickup={handlePickupChange}
-          onChangeDestination={handleDestinationChange}
+          onChangeText={handleChangeText}
+          onSelectPlace={handleSelectPlace}
+          onFocusField={route.focusField}
+          onBlurField={route.blurField}
+          onClearField={route.clearField}
           onSwap={handleSwap}
           onCompare={handleCompare}
         />

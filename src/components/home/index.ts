@@ -1,5 +1,9 @@
 export { CurrentLocationButton } from './CurrentLocationButton';
 export { HomeHeader } from './HomeHeader';
+export { LocationInput } from './LocationInput';
+export type { LocationInputProps } from './LocationInput';
+export { LocationSuggestions } from './LocationSuggestions';
+export type { LocationSuggestionsProps } from './LocationSuggestions';
 export { ProviderSection } from './ProviderSection';
 export { RecentDestinations } from './RecentDestinations';
 export type { RecentDestinationsProps } from './RecentDestinations';

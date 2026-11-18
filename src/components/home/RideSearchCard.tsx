@@ -3,7 +3,6 @@ import { useRef } from 'react';
 import {
   Pressable,
   StyleSheet,
-  TextInput,
   View,
   type TextInputInstance,
 } from 'react-native';
@@ -11,40 +10,52 @@ import {
 import { AppButton } from '@/components/ui/AppButton';
 import { AppText } from '@/components/ui/AppText';
 import { Card } from '@/components/ui/Card';
-import {
-  colors,
-  fontSize,
-  lineHeight,
-  radius,
-  spacing,
-  textVariants,
-} from '@/theme';
+import { LocationInput } from './LocationInput';
+import { LocationSuggestions } from './LocationSuggestions';
+import { colors, radius, spacing } from '@/theme';
+import type { LocationField, LocationSearchState, Place } from '@/types';
 
 export interface RideSearchCardProps {
-  pickup: string;
-  destination: string;
-  /** Validation message shown when a field is missing. */
+  pickup: LocationSearchState;
+  destination: LocationSearchState;
+  /** Validation message shown when a route field is incomplete. */
   error?: string | null;
   /** Confirmation shown once the route passes validation. */
   notice?: string | null;
-  onChangePickup: (value: string) => void;
-  onChangeDestination: (value: string) => void;
+  onChangeText: (field: LocationField, value: string) => void;
+  onSelectPlace: (field: LocationField, place: Place) => void;
+  onFocusField: (field: LocationField) => void;
+  onBlurField: (field: LocationField) => void;
+  onClearField: (field: LocationField) => void;
   onSwap: () => void;
   onCompare: () => void;
 }
 
-/** Pickup and destination entry with swap and the primary compare action. */
+/**
+ * Pickup and destination entry with local autocomplete, swap and the primary
+ * compare action. Only the focused field shows suggestions.
+ */
 export function RideSearchCard({
   pickup,
   destination,
   error,
   notice,
-  onChangePickup,
-  onChangeDestination,
+  onChangeText,
+  onSelectPlace,
+  onFocusField,
+  onBlurField,
+  onClearField,
   onSwap,
   onCompare,
 }: RideSearchCardProps) {
   const destinationRef = useRef<TextInputInstance>(null);
+
+  const activeField: LocationField | null = pickup.focused
+    ? 'pickup'
+    : destination.focused
+      ? 'destination'
+      : null;
+  const activeState = activeField === 'pickup' ? pickup : destination;
 
   return (
     <Card style={styles.card}>
@@ -60,37 +71,37 @@ export function RideSearchCard({
 
           <View style={styles.fields}>
             <View style={styles.field}>
-              <TextInput
-                value={pickup}
-                onChangeText={onChangePickup}
+              <LocationInput
+                value={pickup.query}
                 placeholder="Pickup location"
-                placeholderTextColor={colors.textSubtle}
-                style={styles.input}
-                autoCapitalize="words"
-                autoCorrect={false}
-                returnKeyType="next"
+                onChangeText={(value) => onChangeText('pickup', value)}
+                onFocus={() => onFocusField('pickup')}
+                onBlur={() => onBlurField('pickup')}
+                onClear={() => onClearField('pickup')}
                 onSubmitEditing={() => destinationRef.current?.focus()}
-                selectionColor={colors.accent}
+                returnKeyType="next"
+                selected={pickup.isSelected}
                 accessibilityLabel="Pickup location"
+                clearAccessibilityLabel="Clear pickup location"
               />
             </View>
 
             <View style={styles.divider} />
 
             <View style={styles.field}>
-              <TextInput
-                ref={destinationRef}
-                value={destination}
-                onChangeText={onChangeDestination}
+              <LocationInput
+                inputRef={destinationRef}
+                value={destination.query}
                 placeholder="Where are you going?"
-                placeholderTextColor={colors.textSubtle}
-                style={styles.input}
-                autoCapitalize="words"
-                autoCorrect={false}
-                returnKeyType="search"
+                onChangeText={(value) => onChangeText('destination', value)}
+                onFocus={() => onFocusField('destination')}
+                onBlur={() => onBlurField('destination')}
+                onClear={() => onClearField('destination')}
                 onSubmitEditing={onCompare}
-                selectionColor={colors.accent}
+                returnKeyType="search"
+                selected={destination.isSelected}
                 accessibilityLabel="Destination"
+                clearAccessibilityLabel="Clear destination"
               />
             </View>
           </View>
@@ -105,6 +116,15 @@ export function RideSearchCard({
           <Ionicons name="swap-vertical" size={20} color={colors.text} />
         </Pressable>
       </View>
+
+      {activeField && activeState ? (
+        <LocationSuggestions
+          field={activeField}
+          query={activeState.query}
+          places={activeState.suggestions}
+          onSelect={(place) => onSelectPlace(activeField, place)}
+        />
+      ) : null}
 
       {error ? (
         <View style={styles.message} accessibilityLiveRegion="polite">
@@ -133,7 +153,7 @@ export function RideSearchCard({
         trailing={
           <Ionicons name="arrow-forward" size={18} color={colors.textInverse} />
         }
-        accessibilityHint="Checks the route fields before comparing fares."
+        accessibilityHint="Compares fares once a pickup and destination are selected."
       />
     </Card>
   );
@@ -192,13 +212,6 @@ const styles = StyleSheet.create({
   field: {
     justifyContent: 'center',
     minHeight: 52,
-  },
-  input: {
-    ...textVariants.body,
-    padding: 0,
-    paddingVertical: spacing.md,
-    fontSize: fontSize.md,
-    lineHeight: lineHeight.md,
   },
   divider: {
     height: StyleSheet.hairlineWidth,
