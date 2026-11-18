@@ -1,45 +1,135 @@
 import { Ionicons } from '@react-native-vector-icons/ionicons';
-import { Pressable, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/theme';
+import { useCurrentLocation } from '@/hooks/useCurrentLocation';
+import { openAppSettings } from '@/services/location/currentLocation';
+import type { Place } from '@/types';
 
-/** GPS pickup detection is not wired up yet, so the control is a placeholder. */
-const handlePress = () => {};
+export interface CurrentLocationButtonProps {
+  /** Called with the resolved place so it can become the pickup location. */
+  onPlaceSelected: (place: Place) => void;
+}
 
-/** Secondary action that will fill the pickup field from the device location. */
-export function CurrentLocationButton() {
+/**
+ * Secondary action that fills the pickup field from the device location.
+ *
+ * The hook requests permission only when this is pressed, and the button is
+ * disabled while a request is running so it cannot be fired twice.
+ */
+export function CurrentLocationButton({
+  onPlaceSelected,
+}: CurrentLocationButtonProps) {
+  const { status, error, requestLocation } = useCurrentLocation();
+  const isLocating = status === 'locating';
+
+  const handlePress = async () => {
+    const place = await requestLocation();
+
+    if (place) {
+      onPlaceSelected(place);
+    }
+  };
+
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="Use current location"
-      accessibilityHint="Location detection arrives in a later update."
-      onPress={handlePress}
-      style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-    >
-      <View style={styles.icon}>
-        <Ionicons name="locate" size={18} color={colors.accent} />
-      </View>
+    <View style={styles.root}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Use current location"
+        accessibilityHint="Fills your pickup point using your device location."
+        accessibilityState={{ busy: isLocating, disabled: isLocating }}
+        disabled={isLocating}
+        onPress={handlePress}
+        style={({ pressed }) => [
+          styles.button,
+          pressed && !isLocating ? styles.pressed : null,
+        ]}
+      >
+        <View style={styles.icon}>
+          {isLocating ? (
+            <ActivityIndicator size="small" color={colors.accent} />
+          ) : (
+            <Ionicons name="locate" size={18} color={colors.accent} />
+          )}
+        </View>
 
-      <View style={styles.copy}>
-        <AppText variant="subtitle">Use current location</AppText>
-        <AppText variant="caption">Fill your pickup point in one tap</AppText>
-      </View>
+        <View style={styles.copy}>
+          <AppText variant="subtitle">
+            {isLocating ? 'Finding your location' : 'Use current location'}
+          </AppText>
+          <AppText variant="caption" numberOfLines={2}>
+            {isLocating
+              ? 'Getting a GPS fix and reading your address…'
+              : 'Fill your pickup point in one tap'}
+          </AppText>
+        </View>
 
-      <View style={styles.badge}>
-        <AppText variant="caption" style={styles.badgeLabel}>
-          Soon
-        </AppText>
-      </View>
-    </Pressable>
+        {isLocating ? null : (
+          <Ionicons
+            name="chevron-forward"
+            size={18}
+            color={colors.textSubtle}
+          />
+        )}
+      </Pressable>
+
+      {error ? (
+        <View style={styles.error} accessibilityLiveRegion="polite">
+          <Ionicons
+            name="alert-circle-outline"
+            size={16}
+            color={colors.danger}
+          />
+
+          <View style={styles.errorCopy}>
+            <AppText variant="caption" style={styles.errorText}>
+              {error.message}
+            </AppText>
+
+            {error.canOpenSettings ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Open settings"
+                accessibilityHint="Opens this app's settings so location permission can be enabled."
+                onPress={openAppSettings}
+                hitSlop={8}
+                style={({ pressed }) => [
+                  styles.settingsLink,
+                  pressed && styles.settingsLinkPressed,
+                ]}
+              >
+                <AppText variant="caption" style={styles.settingsLabel}>
+                  Open settings
+                </AppText>
+                <Ionicons
+                  name="open-outline"
+                  size={13}
+                  color={colors.accent}
+                />
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
+      ) : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    gap: spacing.sm,
+  },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+    minHeight: 60,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: radius.lg,
@@ -60,15 +150,32 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-  badge: {
-    paddingVertical: 4,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
+  error: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xs,
   },
-  badgeLabel: {
-    fontSize: 11,
-    fontWeight: '600',
+  errorCopy: {
+    flex: 1,
+    gap: spacing.xs,
+    alignItems: 'flex-start',
+  },
+  errorText: {
+    color: colors.danger,
+  },
+  settingsLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    minHeight: 32,
+    paddingVertical: spacing.xs,
+  },
+  settingsLinkPressed: {
+    opacity: 0.6,
+  },
+  settingsLabel: {
     color: colors.accent,
+    fontWeight: '600',
   },
 });

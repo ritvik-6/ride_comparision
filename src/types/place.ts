@@ -1,8 +1,15 @@
+import type { GeoPoint } from './ride';
+
 /** A place shown in the trip search UI, such as a saved or recent destination. */
 export interface Place {
   id: string;
   name: string;
   address: string;
+  /**
+   * Set only for places derived from the device position. Mock locations omit
+   * it, so existing search data stays valid.
+   */
+  coordinates?: GeoPoint;
 }
 
 /** The two route inputs that support location search. */
