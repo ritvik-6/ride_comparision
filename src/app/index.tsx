@@ -40,6 +40,12 @@ export default function HomeScreen() {
     clearFeedback();
   };
 
+  const handleUseCurrentLocation = (place: Place) => {
+    route.selectPlace('pickup', place);
+    setError(null);
+    setNotice('Pickup set from your current location.');
+  };
+
   const handleSwap = () => {
     route.swap();
     clearFeedback();
@@ -84,7 +90,7 @@ export default function HomeScreen() {
           onCompare={handleCompare}
         />
 
-        <CurrentLocationButton />
+        <CurrentLocationButton onPlaceSelected={handleUseCurrentLocation} />
 
         <RecentDestinations
           places={RECENT_DESTINATIONS}

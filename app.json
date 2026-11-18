@@ -27,7 +27,13 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "@react-native-vector-icons/ionicons"
+      "@react-native-vector-icons/ionicons",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "RideCompare uses your location to fill in your pickup point."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
