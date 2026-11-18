@@ -5,9 +5,10 @@ export {
   CURRENCY_SYMBOL,
   LOCALE,
 } from './app';
+export { RECENT_DESTINATIONS } from './destinations';
+export { HYDERABAD_LOCATIONS } from './locations';
 export {
   PROVIDER_IDS,
   RIDE_PROVIDERS,
   getProviderMeta,
 } from './providers';
-export { RECENT_DESTINATIONS } from './destinations';
