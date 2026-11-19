@@ -1,0 +1,1 @@
+"""RideCompare backend application package."""
