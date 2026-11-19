@@ -1,8 +1,11 @@
 export type {
   FareComparisonResult,
   FareEstimate,
+  FareHighlight,
   FareQuoteSource,
+  FareSortMode,
   RideCategory,
+  RideCategoryFilter,
 } from './fare';
 export type { LocationField, LocationSearchState, Place } from './place';
 export type {

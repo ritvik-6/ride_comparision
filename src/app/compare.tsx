@@ -1,20 +1,24 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components';
 import {
+  ComparisonControls,
   ComparisonFallback,
   ComparisonHeader,
   DemoEstimatesNotice,
-  ProviderFareCard,
+  FareOptionRow,
   RouteSummary,
 } from '@/components/compare';
 import { AppText } from '@/components/ui/AppText';
-import { RIDE_PROVIDERS } from '@/constants';
+import { Card } from '@/components/ui/Card';
+import { getProviderMeta, getRideCategoryMeta } from '@/constants';
 import { getDemoFareComparison } from '@/services/fares/demoFares';
 import { colors, spacing } from '@/theme';
+import type { FareSortMode, RideCategoryFilter } from '@/types';
 import { parseComparisonParams } from '@/utils/comparisonRoute';
+import { rankFareEstimates } from '@/utils/fareRanking';
 
 export default function CompareScreen() {
   const params = useLocalSearchParams();
@@ -23,6 +27,23 @@ export default function CompareScreen() {
     () =>
       route ? getDemoFareComparison(route.pickup, route.destination) : null,
     [route],
+  );
+
+  const [sort, setSort] = useState<FareSortMode>('recommended');
+  const [category, setCategory] = useState<RideCategoryFilter>('all');
+
+  // Ranking (filter, order, badges) is pure and lives outside the components.
+  const rows = useMemo(
+    () =>
+      comparison
+        ? rankFareEstimates(comparison.estimates, { sort, category }).flatMap(
+            (row) => {
+              const provider = getProviderMeta(row.estimate.provider);
+              return provider ? [{ ...row, provider }] : [];
+            },
+          )
+        : [],
+    [comparison, sort, category],
   );
 
   const goBack = () => {
@@ -53,16 +74,16 @@ export default function CompareScreen() {
     );
   }
 
-  const groups = RIDE_PROVIDERS.map((provider) => ({
-    provider,
-    estimates: comparison.estimates.filter(
-      (estimate) => estimate.provider === provider.id,
-    ),
-  })).filter((group) => group.estimates.length > 0);
-
+  const availableCount = rows.filter((row) => row.estimate.available).length;
   const hasAvailableOption = comparison.estimates.some(
     (estimate) => estimate.available,
   );
+  const categoryName =
+    category === 'all'
+      ? null
+      : (getRideCategoryMeta(category)?.label.toLowerCase() ?? null);
+
+  const showAllRides = () => setCategory('all');
 
   return (
     <View style={styles.root}>
@@ -74,18 +95,60 @@ export default function CompareScreen() {
         <DemoEstimatesNotice />
 
         {hasAvailableOption ? (
-          <View style={styles.list}>
-            {groups.map((group) => (
-              <ProviderFareCard
-                key={group.provider.id}
-                provider={group.provider}
-                estimates={group.estimates}
+          <View style={styles.section}>
+            <ComparisonControls
+              sort={sort}
+              category={category}
+              onSortChange={setSort}
+              onCategoryChange={setCategory}
+            />
+
+            {rows.length === 0 ? (
+              <ComparisonFallback
+                icon="funnel-outline"
+                title={
+                  categoryName
+                    ? `No ${categoryName} rides in this comparison`
+                    : 'No rides in this comparison'
+                }
+                message="The sample comparison has no options for this category. Show all rides to see every provider."
+                actionLabel="Show all rides"
+                onAction={showAllRides}
               />
-            ))}
+            ) : (
+              <>
+                {availableCount === 0 ? (
+                  <ComparisonFallback
+                    icon="alert-circle-outline"
+                    title={
+                      categoryName
+                        ? `No available ${categoryName} rides`
+                        : 'No available rides'
+                    }
+                    message="Every sample option here is unavailable on this route. Try another category or sort order."
+                    actionLabel="Show all rides"
+                    onAction={showAllRides}
+                  />
+                ) : null}
+
+                <Card style={styles.listCard}>
+                  {rows.map((row, index) => (
+                    <FareOptionRow
+                      key={row.estimate.id}
+                      estimate={row.estimate}
+                      provider={row.provider}
+                      highlights={row.highlights}
+                      isFirst={index === 0}
+                    />
+                  ))}
+                </Card>
+              </>
+            )}
 
             <AppText variant="caption" style={styles.footnote}>
-              RideCompare compares estimates only. Booking happens in the
-              provider&apos;s own app.
+              Badges mark the lowest sample fare and the shortest sample wait
+              among available options. RideCompare compares estimates only —
+              booking happens in the provider&apos;s own app.
             </AppText>
           </View>
         ) : (
@@ -111,8 +174,12 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
     gap: spacing.xl,
   },
-  list: {
+  section: {
     gap: spacing.lg,
+  },
+  listCard: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xs,
   },
   footnote: {
     paddingHorizontal: spacing.xs,

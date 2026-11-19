@@ -31,3 +31,15 @@ export interface FareComparisonResult {
   estimates: readonly FareEstimate[];
   source: FareQuoteSource;
 }
+
+/** How the comparison list is ordered. */
+export type FareSortMode = 'recommended' | 'lowest-fare' | 'fastest';
+
+/** Category chips above the comparison list. */
+export type RideCategoryFilter = 'all' | RideCategory;
+
+/**
+ * Badges a ride option can earn within one comparison. Only available options
+ * are ranked, so an unavailable tier can never be cheapest or fastest.
+ */
+export type FareHighlight = 'cheapest' | 'fastest';
