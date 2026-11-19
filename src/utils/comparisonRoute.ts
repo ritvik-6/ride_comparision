@@ -1,17 +1,26 @@
 import type { Place } from '@/types';
+import { parseCoordinateParam } from '@/utils/coordinates';
 
 /**
  * Search params carried from the home screen to the comparison route.
  * The index signature matches Expo Router's param type, which accepts plain
  * string maps only.
+ *
+ * Coordinates are optional: mock places have none, while places resolved from
+ * the device do. They are carried so provider hand-off links can use the real
+ * position when it exists.
  */
-export interface ComparisonParams extends Record<string, string> {
+export interface ComparisonParams extends Record<string, string | undefined> {
   pickupId: string;
   pickupName: string;
   pickupAddress: string;
+  pickupLatitude?: string;
+  pickupLongitude?: string;
   destinationId: string;
   destinationName: string;
   destinationAddress: string;
+  destinationLatitude?: string;
+  destinationLongitude?: string;
 }
 
 export interface ComparisonRoute {
@@ -30,7 +39,7 @@ export function toComparisonParams(
   pickup: Place,
   destination: Place,
 ): ComparisonParams {
-  return {
+  const params: ComparisonParams = {
     pickupId: pickup.id,
     pickupName: pickup.name,
     pickupAddress: pickup.address,
@@ -38,6 +47,18 @@ export function toComparisonParams(
     destinationName: destination.name,
     destinationAddress: destination.address,
   };
+
+  if (pickup.coordinates) {
+    params.pickupLatitude = String(pickup.coordinates.latitude);
+    params.pickupLongitude = String(pickup.coordinates.longitude);
+  }
+
+  if (destination.coordinates) {
+    params.destinationLatitude = String(destination.coordinates.latitude);
+    params.destinationLongitude = String(destination.coordinates.longitude);
+  }
+
+  return params;
 }
 
 const readParam = (
@@ -66,7 +87,23 @@ const readPlace = (
     return null;
   }
 
-  return { id, name, address };
+  const place: Place = { id, name, address };
+
+  // A half or out-of-range pair is dropped rather than passed to a provider.
+  const latitude = parseCoordinateParam(
+    params[`${prefix}Latitude`],
+    'latitude',
+  );
+  const longitude = parseCoordinateParam(
+    params[`${prefix}Longitude`],
+    'longitude',
+  );
+
+  if (latitude !== null && longitude !== null) {
+    place.coordinates = { latitude, longitude };
+  }
+
+  return place;
 };
 
 /**
