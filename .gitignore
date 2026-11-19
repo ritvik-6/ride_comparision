@@ -38,6 +38,13 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# python / backend
+__pycache__/
+*.py[cod]
+.pytest_cache/
+backend/.venv/
+.venv/
+
 # generated native folders
 /ios
 /android
