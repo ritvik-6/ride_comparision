@@ -6,6 +6,11 @@ export {
   LOCALE,
 } from './app';
 export { RECENT_DESTINATIONS } from './destinations';
+export { FARE_SORT_MODES, RIDE_CATEGORY_FILTERS } from './fareSort';
+export type {
+  FareSortModeMeta,
+  RideCategoryFilterMeta,
+} from './fareSort';
 export { HYDERABAD_LOCATIONS } from './locations';
 export {
   RIDE_CATEGORIES,
