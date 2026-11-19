@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components';
@@ -15,8 +15,16 @@ import { AppText } from '@/components/ui/AppText';
 import { Card } from '@/components/ui/Card';
 import { getProviderMeta, getRideCategoryMeta } from '@/constants';
 import { getDemoFareComparison } from '@/services/fares/demoFares';
+import {
+  openProviderLink,
+  PROVIDER_LINK_DISCLOSURE,
+} from '@/services/links';
 import { colors, spacing } from '@/theme';
-import type { FareSortMode, RideCategoryFilter } from '@/types';
+import type {
+  FareSortMode,
+  RideCategoryFilter,
+  RideProvider,
+} from '@/types';
 import { parseComparisonParams } from '@/utils/comparisonRoute';
 import { rankFareEstimates } from '@/utils/fareRanking';
 
@@ -44,6 +52,22 @@ export default function CompareScreen() {
           )
         : [],
     [comparison, sort, category],
+  );
+
+  // URL construction lives in the link service; this only forwards the route.
+  const handleContinue = useCallback(
+    (provider: RideProvider) => {
+      if (!route) {
+        return;
+      }
+
+      void openProviderLink({
+        provider,
+        pickup: route.pickup,
+        destination: route.destination,
+      });
+    },
+    [route],
   );
 
   const goBack = () => {
@@ -139,6 +163,7 @@ export default function CompareScreen() {
                       provider={row.provider}
                       highlights={row.highlights}
                       isFirst={index === 0}
+                      onContinue={() => handleContinue(row.estimate.provider)}
                     />
                   ))}
                 </Card>
@@ -147,8 +172,7 @@ export default function CompareScreen() {
 
             <AppText variant="caption" style={styles.footnote}>
               Badges mark the lowest sample fare and the shortest sample wait
-              among available options. RideCompare compares estimates only —
-              booking happens in the provider&apos;s own app.
+              among available options. {PROVIDER_LINK_DISCLOSURE}
             </AppText>
           </View>
         ) : (
