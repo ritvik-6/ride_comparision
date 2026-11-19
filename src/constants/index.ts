@@ -8,6 +8,11 @@ export {
 export { RECENT_DESTINATIONS } from './destinations';
 export { HYDERABAD_LOCATIONS } from './locations';
 export {
+  RIDE_CATEGORIES,
+  getRideCategoryMeta,
+} from './rideCategories';
+export type { RideCategoryMeta } from './rideCategories';
+export {
   PROVIDER_IDS,
   RIDE_PROVIDERS,
   getProviderMeta,

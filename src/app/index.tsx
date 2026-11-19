@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Keyboard, StyleSheet, View } from 'react-native';
 
@@ -13,6 +14,7 @@ import { HYDERABAD_LOCATIONS, RECENT_DESTINATIONS } from '@/constants';
 import { useRouteSearch } from '@/hooks/useRouteSearch';
 import { colors, spacing } from '@/theme';
 import type { LocationField, Place } from '@/types';
+import { toComparisonParams } from '@/utils/comparisonRoute';
 import { validateRoute } from '@/utils/routeValidation';
 
 export default function HomeScreen() {
@@ -53,22 +55,23 @@ export default function HomeScreen() {
 
   const handleCompare = () => {
     const message = validateRoute(route.pickup, route.destination);
+    const pickup = route.pickup.place;
+    const destination = route.destination.place;
 
-    if (message) {
+    if (message || !pickup || !destination) {
       setNotice(null);
-      setError(message);
+      setError(message ?? 'Select a pickup and a destination to compare rides.');
       return;
     }
 
-    const origin = route.pickup.place?.name;
-    const target = route.destination.place?.name;
-
     route.dismissSuggestions();
     Keyboard.dismiss();
-    setError(null);
-    setNotice(
-      `Route ready: ${origin} to ${target}. Fare comparison arrives in the next update.`,
-    );
+    clearFeedback();
+
+    router.push({
+      pathname: '/compare',
+      params: toComparisonParams(pickup, destination),
+    });
   };
 
   return (
