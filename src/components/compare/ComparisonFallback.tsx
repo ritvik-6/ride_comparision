@@ -1,7 +1,7 @@
 import { Ionicons, type IoniconsIconName } from '@react-native-vector-icons/ionicons';
 import { StyleSheet, View } from 'react-native';
 
-import { AppButton } from '@/components/ui/AppButton';
+import { AppButton, type AppButtonVariant } from '@/components/ui/AppButton';
 import { AppText } from '@/components/ui/AppText';
 import { Card } from '@/components/ui/Card';
 import { colors, radius, spacing } from '@/theme';
@@ -12,6 +12,8 @@ export interface ComparisonFallbackProps {
   message: string;
   actionLabel: string;
   onAction: () => void;
+  /** `primary` for the main recovery action, e.g. retrying a failed request. */
+  actionVariant?: AppButtonVariant;
 }
 
 /** Recoverable state card used for missing routes and empty comparisons. */
@@ -21,6 +23,7 @@ export function ComparisonFallback({
   message,
   actionLabel,
   onAction,
+  actionVariant = 'secondary',
 }: ComparisonFallbackProps) {
   return (
     <Card style={styles.card}>
@@ -33,7 +36,11 @@ export function ComparisonFallback({
         <AppText variant="bodyMuted">{message}</AppText>
       </View>
 
-      <AppButton label={actionLabel} onPress={onAction} variant="secondary" />
+      <AppButton
+        label={actionLabel}
+        onPress={onAction}
+        variant={actionVariant}
+      />
     </Card>
   );
 }

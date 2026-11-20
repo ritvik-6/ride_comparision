@@ -3,6 +3,7 @@ export type { ComparisonControlsProps } from './ComparisonControls';
 export { ComparisonFallback } from './ComparisonFallback';
 export type { ComparisonFallbackProps } from './ComparisonFallback';
 export { ComparisonHeader } from './ComparisonHeader';
+export { ComparisonLoading } from './ComparisonLoading';
 export type { ComparisonHeaderProps } from './ComparisonHeader';
 export { DemoEstimatesNotice } from './DemoEstimatesNotice';
 export { FareOptionRow } from './FareOptionRow';
