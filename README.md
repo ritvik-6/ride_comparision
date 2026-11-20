@@ -3,8 +3,10 @@
 Android-first ride-hailing price comparison app. Compare Rapido, Uber and Ola
 fares in one place.
 
-**Stage 1 — project initialization and architecture only.** No screens beyond the
-home placeholder, no API calls, no backend.
+Pick a pickup and destination, then compare Bike, Auto and Cab estimates from
+all three providers on one screen. Fares are **sample data** served by the local
+FastAPI backend in [`backend/`](backend/README.md) — never live provider prices.
+See [Running the app with the fares backend](#running-the-app-with-the-fares-backend-android).
 
 ## Stack
 
@@ -52,7 +54,12 @@ src/
     app.ts              # App name, tagline, currency, locale
     providers.ts        # Static provider metadata (no fares)
   hooks/useTheme.ts     # Theme access hook
-  services/api/client.ts# JSON fetch wrapper for the future backend
+  hooks/useFareComparison.ts # Loads fares: loading / error / retry
+  services/api/client.ts# JSON fetch wrapper + ApiError
+  services/fares/
+    faresContract.ts    # Request mapping, response validation, error copy
+    faresApi.ts         # POST /api/v1/fares/compare
+    demoFares.ts        # Reference implementation the backend is parity-tested against
   theme/
     colors.ts           # White canvas, near-black text, green accent
     spacing.ts          # 4pt spacing scale, radii, layout constants
@@ -95,17 +102,89 @@ plain text — never put secrets there.
 
 | Variable | Purpose |
 | --- | --- |
-| `EXPO_PUBLIC_API_BASE_URL` | Fare comparison backend origin; empty by default |
+| `EXPO_PUBLIC_API_BASE_URL` | Fares backend origin, e.g. `http://10.0.2.2:8000`; empty by default |
 | `EXPO_PUBLIC_APP_ENV` | `development` / `production` label |
 
 Read them through `src/config/env.ts` (`env.apiBaseUrl`, `isApiConfigured`) rather
 than touching `process.env` directly, so missing config degrades gracefully.
 `.env` is gitignored; `.env.example` is committed.
 
+## Running the app with the fares backend (Android)
+
+The comparison screen calls `POST <base>/api/v1/fares/compare` and shows nothing
+when the server cannot be reached — it never falls back to locally generated
+numbers.
+
+**1. Start the backend** (leave it running):
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+`--host 0.0.0.0` is what lets a physical phone reach the server; the emulator
+works with the default host too.
+
+**2. Point the app at it.** Copy `.env.example` to `.env` (first time only) and
+set `EXPO_PUBLIC_API_BASE_URL` for your target:
+
+| Run target | `EXPO_PUBLIC_API_BASE_URL` |
+| --- | --- |
+| Android emulator | `http://10.0.2.2:8000` |
+| Physical Android phone | `http://192.168.x.x:8000` (your machine's LAN IP) |
+| Expo web / iOS simulator | `http://localhost:8000` |
+
+`10.0.2.2` is the emulator's alias for your machine's `localhost`; plain
+`localhost` from inside the emulator points at the emulator itself. For a phone,
+run `ipconfig` and use the Wi-Fi/Ethernet IPv4 address, with the phone on the same
+network.
+
+**3. Start Expo.** `EXPO_PUBLIC_*` values are inlined at bundle time, so restart
+Metro after changing `.env`:
+
+```powershell
+npx expo start --clear
+```
+
+Open the app, choose a pickup and destination, and tap **Compare rides**. The
+estimates now come from the server.
+
+Notes:
+
+- If you see **"No server configured"**, `.env` has no base URL or Metro was not
+  restarted.
+- If you see **"Can't reach the server"**, the backend is not running, the host
+  is wrong, or a firewall is blocking port 8000. **Try again** retries the same
+  route.
+- A `422` becomes **"These locations were rejected"** — go back and reselect the
+  places. Malformed responses show **"Unexpected response"** instead of
+  rendering untrusted numbers.
+- CORS applies to browsers only; add your Expo web origin to `CORS_ORIGINS` in
+  `backend/.env` if you run in a browser. The Android app is not affected.
+
+### Fare data flow
+
+`compare.tsx` → `useFareComparison` → `faresApi.fetchFareComparison` →
+`apiRequest` → `POST /api/v1/fares/compare` → validated by `faresContract` →
+`rankFareEstimates` (filters, sorting, cheapest/fastest badges).
+
+Everything visual — badges, sort control, category chips, unavailable rows,
+provider hand-off links and the demo-estimates disclosure — is unchanged and
+operates on whatever the server returns.
+
+`src/services/fares/demoFares.ts` no longer feeds the screen. It stays as the
+reference implementation that the backend's demo generator is parity-tested
+against (`backend/tests/fixtures/`), so the two cannot drift.
+
 ## Verified
 
 - `npx tsc --noEmit` — clean
 - `npx expo lint` — clean
-- `npx expo export --platform android` — bundles (1137 modules)
-- `npx expo-doctor` — 20/20 checks passed
-- `npx expo start` — Metro starts on `http://localhost:8081`
+- `npm test` — 23 Node tests (link URLs, fare contract mapping/validation/errors)
+- `npx expo export --platform android` — bundles
+- `backend: pytest` — 76 tests
+- Request mapping and response parsing exercised against the running backend
+  (`HTTP 200`, nine estimates, unavailable Rapido cab preserved)
+- Not yet exercised on an emulator or device: the in-app loading, error and
+  retry states
