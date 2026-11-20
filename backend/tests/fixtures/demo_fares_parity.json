@@ -1,0 +1,1706 @@
+{
+  "generatedBy": "node backend/tests/fixtures/generate_demo_fares_parity.mjs (executes src/services/fares/demoFares.ts)",
+  "notice": "Fares and ETAs on this screen are sample data for this build. They are not live prices from Rapido, Uber or Ola.",
+  "hashes": [
+    {
+      "value": "",
+      "hash": 2166136261
+    },
+    {
+      "value": "a",
+      "hash": 3826002220
+    },
+    {
+      "value": "hitech-city->airport",
+      "hash": 1439204200
+    },
+    {
+      "value": "Ω-ü",
+      "hash": 3180035925
+    },
+    {
+      "value": "🚕",
+      "hash": 1613934407
+    },
+    {
+      "value": "emoji-🚕-🙂->hitech-city",
+      "hash": 52606098
+    },
+    {
+      "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "hash": 573638933
+    },
+    {
+      "value": "Ünïcode straße 東京",
+      "hash": 2529217342
+    }
+  ],
+  "routes": [
+    {
+      "pickupId": "hitech-city",
+      "destinationId": "airport",
+      "seed": 1439204200,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 2,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 85,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 190,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 95,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 210,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 205,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "gachibowli",
+      "destinationId": "secunderabad",
+      "seed": 2389029720,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 40,
+          "currency": "INR",
+          "etaMinutes": 2,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 80,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 175,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 85,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 195,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 85,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 190,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "madhapur",
+      "destinationId": "jubilee-hills",
+      "seed": 3545325265,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 200,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 55,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 100,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 220,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 95,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 215,
+          "currency": "INR",
+          "etaMinutes": 9,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "banjara-hills",
+      "destinationId": "kukatpally",
+      "seed": 499313762,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 95,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 205,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 55,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 105,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 230,
+          "currency": "INR",
+          "etaMinutes": 9,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 55,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 100,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 225,
+          "currency": "INR",
+          "etaMinutes": 10,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "begumpet",
+      "destinationId": "charminar",
+      "seed": 2402800862,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 200,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 55,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 100,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 225,
+          "currency": "INR",
+          "etaMinutes": 9,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 95,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 215,
+          "currency": "INR",
+          "etaMinutes": 10,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "airport",
+      "destinationId": "hitech-city",
+      "seed": 611862440,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 2,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 200,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 55,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 100,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 225,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 95,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 215,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "lb-nagar",
+      "destinationId": "hussain-sagar",
+      "seed": 1859656888,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 2,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 95,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 210,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 60,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 105,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 235,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 55,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 100,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 230,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "kondapur",
+      "destinationId": "financial-district",
+      "seed": 1235875296,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 2,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 200,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 55,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 100,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 220,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 95,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 215,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "ameerpet",
+      "destinationId": "madhapur",
+      "seed": 2544623129,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 95,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 215,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 60,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 105,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 235,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 55,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 100,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 230,
+          "currency": "INR",
+          "etaMinutes": 9,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "secunderabad",
+      "destinationId": "kukatpally",
+      "seed": 1883386683,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 80,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 180,
+          "currency": "INR",
+          "etaMinutes": 9,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 200,
+          "currency": "INR",
+          "etaMinutes": 10,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 85,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 195,
+          "currency": "INR",
+          "etaMinutes": 11,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "a",
+      "destinationId": "b",
+      "seed": 526511983,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 80,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 180,
+          "currency": "INR",
+          "etaMinutes": 9,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 200,
+          "currency": "INR",
+          "etaMinutes": 10,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 85,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 195,
+          "currency": "INR",
+          "etaMinutes": 11,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "",
+      "destinationId": "",
+      "seed": 298648946,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 85,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 190,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 95,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 210,
+          "currency": "INR",
+          "etaMinutes": 9,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 205,
+          "currency": "INR",
+          "etaMinutes": 10,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "hitech-city",
+      "destinationId": "hitech-city",
+      "seed": 834741582,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 80,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 180,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 200,
+          "currency": "INR",
+          "etaMinutes": 9,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 85,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 195,
+          "currency": "INR",
+          "etaMinutes": 10,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "unicode-Ω-ü",
+      "destinationId": "emoji-🚕-🙂",
+      "seed": 2617050777,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 200,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 55,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 100,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 220,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 95,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 215,
+          "currency": "INR",
+          "etaMinutes": 9,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "long-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "destinationId": "hitech-city",
+      "seed": 1110372298,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 85,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 190,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 95,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 210,
+          "currency": "INR",
+          "etaMinutes": 9,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 205,
+          "currency": "INR",
+          "etaMinutes": 10,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "HITECH-CITY",
+      "destinationId": "Airport",
+      "seed": 3779655496,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 40,
+          "currency": "INR",
+          "etaMinutes": 2,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 80,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 175,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 195,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 85,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 190,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    },
+    {
+      "pickupId": "0",
+      "destinationId": "0",
+      "seed": 1630658024,
+      "estimates": [
+        {
+          "id": "rapido-bike",
+          "provider": "rapido",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 40,
+          "currency": "INR",
+          "etaMinutes": 2,
+          "available": true
+        },
+        {
+          "id": "rapido-auto",
+          "provider": "rapido",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 80,
+          "currency": "INR",
+          "etaMinutes": 4,
+          "available": true
+        },
+        {
+          "id": "rapido-cab",
+          "provider": "rapido",
+          "category": "cab",
+          "tierLabel": "Cab",
+          "fare": 180,
+          "currency": "INR",
+          "etaMinutes": 6,
+          "available": false
+        },
+        {
+          "id": "uber-bike",
+          "provider": "uber",
+          "category": "bike",
+          "tierLabel": "Moto",
+          "fare": 50,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "uber-auto",
+          "provider": "uber",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 90,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "uber-cab",
+          "provider": "uber",
+          "category": "cab",
+          "tierLabel": "Go",
+          "fare": 195,
+          "currency": "INR",
+          "etaMinutes": 7,
+          "available": true
+        },
+        {
+          "id": "ola-bike",
+          "provider": "ola",
+          "category": "bike",
+          "tierLabel": "Bike",
+          "fare": 45,
+          "currency": "INR",
+          "etaMinutes": 3,
+          "available": true
+        },
+        {
+          "id": "ola-auto",
+          "provider": "ola",
+          "category": "auto",
+          "tierLabel": "Auto",
+          "fare": 85,
+          "currency": "INR",
+          "etaMinutes": 5,
+          "available": true
+        },
+        {
+          "id": "ola-cab",
+          "provider": "ola",
+          "category": "cab",
+          "tierLabel": "Mini",
+          "fare": 195,
+          "currency": "INR",
+          "etaMinutes": 8,
+          "available": true
+        }
+      ],
+      "source": "demo"
+    }
+  ]
+}
