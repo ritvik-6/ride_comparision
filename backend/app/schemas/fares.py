@@ -12,7 +12,22 @@ from pydantic.alias_generators import to_camel
 
 RideProvider = Literal["rapido", "uber", "ola"]
 RideCategory = Literal["bike", "auto", "cab"]
-FareQuoteSource = Literal["demo"]
+
+#: Demo estimates and authorised provider quotes are served separately; a
+#: response is never a blend of the two.
+FareQuoteSource = Literal["demo", "provider-api"]
+
+#: How one provider's call went, or why it was not made. Mirrors
+#: ``ProviderStatus`` in the domain.
+ProviderStatusValue = Literal[
+    "success", "not_configured", "timed_out", "failed", "unsupported"
+]
+
+#: The only error detail a client may see. Mirrors ``ProviderErrorCode``; a
+#: raw exception message, provider body or credential is never serialised.
+ProviderErrorCodeValue = Literal[
+    "timeout", "total_budget_exceeded", "provider_error", "missing_coordinates"
+]
 
 PlaceId = Annotated[
     str, StringConstraints(strip_whitespace=True, min_length=1, max_length=128)
@@ -101,17 +116,42 @@ class FareEstimateModel(CamelModel):
     )
 
 
+class ProviderStateModel(CamelModel):
+    """The outcome of asking one provider for quotes."""
+
+    provider: RideProvider
+    status: ProviderStatusValue = Field(
+        description="'success', or why this provider contributed no quote."
+    )
+    latency_ms: int = Field(
+        ge=0, description="Locally measured call duration in milliseconds."
+    )
+    error_code: ProviderErrorCodeValue | None = Field(
+        default=None,
+        description="Enumerated, non-sensitive failure reason; never a message.",
+    )
+
+
 class FareComparisonResponse(CamelModel):
-    """Demo estimates for one route.
+    """Estimates for one route, with their provenance.
 
     ``source`` and ``notice`` exist so no client can present these numbers as
-    live provider quotes.
+    something they are not: demo numbers are never called live quotes.
     """
 
-    source: FareQuoteSource = Field(description="Always 'demo' for this endpoint.")
-    notice: str = Field(description="Human-readable demo-data disclaimer.")
+    source: FareQuoteSource = Field(
+        description="'demo' for sample data, 'provider-api' for live quotes."
+    )
+    notice: str = Field(description="Human-readable provenance disclosure.")
     pickup: PlaceSummary
     destination: PlaceSummary
     estimates: list[FareEstimateModel] = Field(
-        description="Every demo offer, including unavailable tiers."
+        description="Every offer, including unavailable tiers."
+    )
+    provider_states: list[ProviderStateModel] | None = Field(
+        default=None,
+        description=(
+            "Per-provider outcome. Present for live comparisons; omitted for "
+            "demo, whose response is a published contract and stays unchanged."
+        ),
     )
