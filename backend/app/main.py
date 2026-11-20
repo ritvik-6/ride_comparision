@@ -7,7 +7,7 @@ Run locally with:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import health
+from app.api.routes import fares, health
 from app.core.config import get_settings
 
 
@@ -23,7 +23,10 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title=settings.app_name,
         version=settings.app_version,
-        description="Backend foundation for RideCompare. No provider APIs are wired up yet.",
+        description=(
+            "Backend for RideCompare. Fares served by this API are demo estimates; "
+            "no provider APIs are wired up yet."
+        ),
     )
 
     application.add_middleware(
@@ -35,6 +38,7 @@ def create_app() -> FastAPI:
     )
 
     application.include_router(health.router)
+    application.include_router(fares.router)
 
     return application
 
