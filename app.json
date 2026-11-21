@@ -33,10 +33,17 @@
         {
           "locationWhenInUsePermission": "RideCompare uses your location to fill in your pickup point."
         }
-      ]
+      ],
+      "@maplibre/maplibre-react-native"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2a4ef5c9-d8a1-4879-a7e2-35742e66bc92"
+      }
+    },
+    "owner": "ritvik_6"
   }
 }
