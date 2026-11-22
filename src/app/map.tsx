@@ -22,6 +22,7 @@ import {
   MAP_SELECTED_ZOOM,
 } from '@/constants/map';
 import { useCurrentLocation } from '@/hooks/useCurrentLocation';
+import { useKeyboardInset } from '@/hooks/useKeyboardInset';
 import { usePlaceSuggestions } from '@/hooks/usePlaceSuggestions';
 import { useRoutePlan } from '@/hooks/useRoutePlan';
 import { getGeocodingProvider } from '@/services/geocoding';
@@ -74,6 +75,8 @@ export default function MapScreen() {
 
   const [pinStatus, setPinStatus] = useState<PinStatus>('idle');
   const [pinMessage, setPinMessage] = useState('');
+  /** Whether the last tap failure is worth another attempt. */
+  const [pinRetryable, setPinRetryable] = useState(true);
   /** Tapped point drawn immediately, before its address resolves. */
   const [pendingPoint, setPendingPoint] = useState<Coordinates | null>(null);
   const lastPin = useRef<Coordinates | null>(null);
@@ -91,8 +94,16 @@ export default function MapScreen() {
     error: locationError,
     requestLocation,
   } = useCurrentLocation();
-  const { suggestions, status: suggestionsStatus, error, retry } =
-    usePlaceSuggestions({ query, bias, enabled: searchOpen });
+  const {
+    suggestions,
+    status: suggestionsStatus,
+    error,
+    canRetry: suggestionsCanRetry,
+    retry,
+  } = usePlaceSuggestions({ query, bias, enabled: searchOpen });
+
+  // Lifts the search sheet above the on-screen keyboard.
+  const keyboardInset = useKeyboardInset();
 
   const goBack = useCallback(() => {
     if (router.canGoBack()) {
@@ -204,6 +215,12 @@ export default function MapScreen() {
         return;
       }
 
+      // While the keyboard is up the rider is typing, not planning: a stray
+      // touch on the sliver of visible map must not move their location.
+      if (keyboardInset > 0) {
+        return;
+      }
+
       pinRequest.current?.abort();
 
       const controller = new AbortController();
@@ -237,9 +254,10 @@ export default function MapScreen() {
       } else {
         setPinStatus('error');
         setPinMessage(outcome.message);
+        setPinRetryable(outcome.retryable);
       }
     },
-    [commitSelection, mode],
+    [commitSelection, keyboardInset, mode],
   );
 
   const handleRetryPin = useCallback(() => {
@@ -433,7 +451,9 @@ export default function MapScreen() {
           state={pinStatus === 'error' ? 'error' : 'resolving'}
           message={pinMessage}
           bottomOffset={panelHeight}
-          {...(pinStatus === 'error' ? { onRetry: handleRetryPin } : {})}
+          {...(pinStatus === 'error' && pinRetryable
+            ? { onRetry: handleRetryPin }
+            : {})}
         />
       )}
 
@@ -469,6 +489,7 @@ export default function MapScreen() {
                 suggestions={suggestions}
                 status={suggestionsStatus}
                 errorMessage={error}
+                canRetry={suggestionsCanRetry}
                 onRetry={retry}
                 onSelectSuggestion={handleSelectSuggestion}
                 onUseCurrentLocation={handleUseCurrentLocation}
@@ -486,6 +507,7 @@ export default function MapScreen() {
                 canDismiss={Boolean(pickup && destination)}
                 focusToken={focusToken}
                 bottomInset={insets.bottom}
+                keyboardInset={keyboardInset}
                 attribution={getGeocodingProvider().attribution}
                 onHeightChange={setPanelHeight}
               />

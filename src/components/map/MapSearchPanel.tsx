@@ -42,6 +42,8 @@ export interface MapSearchPanelProps {
   suggestions: readonly MapLocation[];
   status: SuggestionsStatus;
   errorMessage: string | null;
+  /** Only true when repeating the request could actually succeed. */
+  canRetry: boolean;
   onRetry: () => void;
   onSelectSuggestion: (location: MapLocation) => void;
   onUseCurrentLocation: () => void;
@@ -54,6 +56,8 @@ export interface MapSearchPanelProps {
   /** Increment to focus the input, e.g. after tapping a marker. */
   focusToken: number;
   bottomInset: number;
+  /** Height of the on-screen keyboard, so the sheet stays reachable while typing. */
+  keyboardInset: number;
   attribution: string;
   onHeightChange: (height: number) => void;
 }
@@ -140,6 +144,7 @@ export function MapSearchPanel({
   suggestions,
   status,
   errorMessage,
+  canRetry,
   onRetry,
   onSelectSuggestion,
   onUseCurrentLocation,
@@ -150,10 +155,12 @@ export function MapSearchPanel({
   canDismiss,
   focusToken,
   bottomInset,
+  keyboardInset,
   attribution,
   onHeightChange,
 }: MapSearchPanelProps) {
   const inputRef = useRef<TextInputInstance>(null);
+  const keyboardVisible = keyboardInset > 0;
   const trimmedLength = query.trim().length;
   const isTooShort =
     trimmedLength > 0 && trimmedLength < MIN_SEARCH_LENGTH && status !== 'loading';
@@ -171,7 +178,12 @@ export function MapSearchPanel({
 
   return (
     <View
-      style={[styles.sheet, { paddingBottom: bottomInset + spacing.lg }]}
+      style={[
+        styles.sheet,
+        // The sheet is anchored to the bottom edge, so its own padding is what
+        // lifts the input and suggestions clear of the keyboard.
+        { paddingBottom: Math.max(bottomInset, keyboardInset) + spacing.lg },
+      ]}
       onLayout={(event) => onHeightChange(event.nativeEvent.layout.height)}
     >
       <View style={styles.grabber} />
@@ -306,16 +318,18 @@ export function MapSearchPanel({
           <AppText variant="caption" style={styles.errorText}>
             {errorMessage ?? 'Place search is unavailable right now.'}
           </AppText>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Retry place search"
-            onPress={onRetry}
-            hitSlop={8}
-          >
-            <AppText variant="caption" style={styles.link}>
-              Retry
-            </AppText>
-          </Pressable>
+          {canRetry ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry place search"
+              onPress={onRetry}
+              hitSlop={8}
+            >
+              <AppText variant="caption" style={styles.link}>
+                Retry
+              </AppText>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
 
@@ -339,7 +353,7 @@ export function MapSearchPanel({
 
       {suggestions.length > 0 ? (
         <ScrollView
-          style={styles.suggestions}
+          style={[styles.suggestions, keyboardVisible ? styles.suggestionsCompact : null]}
           keyboardShouldPersistTaps="handled"
           nestedScrollEnabled
           showsVerticalScrollIndicator
@@ -540,6 +554,10 @@ const styles = StyleSheet.create({
   },
   suggestions: {
     maxHeight: 204,
+  },
+  /** Fewer rows while the keyboard is up, so the bar and input stay on screen. */
+  suggestionsCompact: {
+    maxHeight: 136,
   },
   suggestion: {
     flexDirection: 'row',
