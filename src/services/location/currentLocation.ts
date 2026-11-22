@@ -127,6 +127,43 @@ function buildAddress(
 }
 
 /**
+ * Turns a GPS fix into a Place.
+ *
+ * Throws `geocode-failed` when no readable address comes back, because a
+ * coordinate with no address must never be presented as a resolved pickup.
+ */
+async function placeFromPosition(
+  position: Location.LocationObject,
+): Promise<Place> {
+  const { latitude, longitude } = position.coords;
+
+  let results: Location.LocationGeocodedAddress[];
+
+  try {
+    results = await withTimeout(
+      Location.reverseGeocodeAsync({ latitude, longitude }),
+      GEOCODE_TIMEOUT_MS,
+    );
+  } catch {
+    throw new CurrentLocationError('geocode-failed', LOCATION_MESSAGES.geocodeFailed);
+  }
+
+  const first = results[0];
+  const built = first ? buildAddress(first) : null;
+
+  if (!built) {
+    throw new CurrentLocationError('geocode-failed', LOCATION_MESSAGES.geocodeFailed);
+  }
+
+  return {
+    id: `current-${latitude.toFixed(5)},${longitude.toFixed(5)}`,
+    name: built.name,
+    address: built.address,
+    coordinates: { latitude, longitude },
+  };
+}
+
+/**
  * Resolves the device position into a searchable Place.
  *
  * Permission is requested here, which only happens because the caller is
@@ -176,33 +213,39 @@ export async function resolveCurrentPlace(): Promise<Place> {
       : new CurrentLocationError('unavailable', LOCATION_MESSAGES.unavailable);
   }
 
-  const { latitude, longitude } = position.coords;
+  return placeFromPosition(position);
+}
 
-  let results: Location.LocationGeocodedAddress[];
-
+/**
+ * Reads the device position without ever prompting for permission.
+ *
+ * The map screen calls this on mount so a rider who already granted location
+ * gets their pickup filled in automatically. When permission was never granted,
+ * GPS is off, or no address resolves, it quietly returns null and the rider
+ * picks a point themselves: no dialog, no invented address.
+ */
+export async function readGrantedCurrentPlace(): Promise<Place | null> {
   try {
-    results = await withTimeout(
-      Location.reverseGeocodeAsync({ latitude, longitude }),
-      GEOCODE_TIMEOUT_MS,
+    const permission = await Location.getForegroundPermissionsAsync();
+
+    if (permission.status !== 'granted') {
+      return null;
+    }
+
+    if (!(await Location.hasServicesEnabledAsync())) {
+      return null;
+    }
+
+    const position = await withTimeout(
+      Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+      POSITION_TIMEOUT_MS,
     );
+
+    return await placeFromPosition(position);
   } catch {
-    throw new CurrentLocationError('geocode-failed', LOCATION_MESSAGES.geocodeFailed);
+    // Best effort only: the manual flows surface real errors.
+    return null;
   }
-
-  const first = results[0];
-  const built = first ? buildAddress(first) : null;
-
-  // Coordinates without an address are not a usable pickup: never guess one.
-  if (!built) {
-    throw new CurrentLocationError('geocode-failed', LOCATION_MESSAGES.geocodeFailed);
-  }
-
-  return {
-    id: `current-${latitude.toFixed(5)},${longitude.toFixed(5)}`,
-    name: built.name,
-    address: built.address,
-    coordinates: { latitude, longitude },
-  };
 }
 
 /** Opens this app's system settings page, where a blocked permission can be enabled. */

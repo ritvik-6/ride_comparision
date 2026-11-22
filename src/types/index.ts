@@ -8,6 +8,7 @@ export type {
   RideCategoryFilter,
 } from './fare';
 export type { LocationField, LocationSearchState, Place } from './place';
+export type { Coordinates, LocationSource, MapLocation } from './location';
 export type {
   FareComparison,
   GeoPoint,

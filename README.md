@@ -42,7 +42,9 @@ native modules have been added.
 src/
   app/                  # Routes only — every file here is a screen
     _layout.tsx         # Root Stack, SafeAreaProvider, status bar
-    index.tsx           # Home placeholder
+    index.tsx           # Home: map-first "Plan your ride" + manual search
+    map.tsx             # Map-first route planner
+    compare.tsx         # Fare comparison
   components/
     ui/AppText.tsx      # Themed typography (variant: display | title | body …)
     ui/Card.tsx         # Rounded surface card
@@ -56,6 +58,14 @@ src/
   hooks/useTheme.ts     # Theme access hook
   hooks/useFareComparison.ts # Loads fares: loading / error / retry
   services/api/client.ts# JSON fetch wrapper + ApiError
+  services/geocoding/
+    types.ts            # GeocodingProvider interface + error kinds and copy
+    photonMapping.ts    # Pure URL building and Photon GeoJSON parsing
+    photon.ts           # Photon adapter: fetch, timeout, cancellation, cache
+    index.ts            # getGeocodingProvider() — the single swap point
+  services/location/currentLocation.ts # expo-location permission + geocoding
+  utils/mapLocations.ts # MapLocation ⇄ Place conversion
+  hooks/usePlaceSuggestions.ts # Debounced autocomplete state
   services/fares/
     faresContract.ts    # Request mapping, response validation, error copy
     faresApi.ts         # POST /api/v1/fares/compare
@@ -103,11 +113,61 @@ plain text — never put secrets there.
 | Variable | Purpose |
 | --- | --- |
 | `EXPO_PUBLIC_API_BASE_URL` | Fares backend origin, e.g. `http://10.0.2.2:8000`; empty by default |
+| `EXPO_PUBLIC_GEOCODING_BASE_URL` | Optional geocoding origin; defaults to the public Photon instance |
 | `EXPO_PUBLIC_APP_ENV` | `development` / `production` label |
 
 Read them through `src/config/env.ts` (`env.apiBaseUrl`, `isApiConfigured`) rather
 than touching `process.env` directly, so missing config degrades gracefully.
 `.env` is gitignored; `.env.example` is committed.
+
+## Map and place search
+
+Rides are planned on the map: `/map` opens full-screen, tap anywhere to drop a
+pin, or search for a real place. Pickup and destination are stored as
+`MapLocation` (`src/types/location.ts`): latitude, longitude, display name,
+formatted address, optional place id and the source (`gps` | `map` | `search`).
+They convert to the existing `Place` shape on the way to `/compare`, so the
+comparison screen, provider links and backend contract are unchanged.
+
+### Geocoding provider
+
+The app uses **[Photon](https://photon.komoot.io/)** — an OpenStreetMap geocoder
+built for search-as-you-type that also reverse geocodes, so one provider covers
+autocomplete and map taps.
+
+| Aspect | Detail |
+| --- | --- |
+| Key required | **No** — works with no signup for development |
+| Public instance | `https://photon.komoot.io` |
+| Usage policy | Fair use. Heavy traffic is throttled or blocked, and availability is not guaranteed |
+| Free tier | No quota or paid plan; it is a demo server, not a commercial API |
+| Commercial use | Not suitable as-is: run your own Photon instance or put a keyed provider behind the same interface |
+
+What the app does to stay within that policy: no request for queries shorter
+than 3 characters, a 450 ms debounce, one in-flight request at a time (cancelled
+when the query changes), an 8-second timeout, and a small per-query result cache.
+
+To use another host, set `EXPO_PUBLIC_GEOCODING_BASE_URL` (no trailing slash).
+Nothing else changes: every screen calls `getGeocodingProvider()` from
+`src/services/geocoding/index.ts`, so swapping to a keyed service or a backend
+proxy is a change to one file plus an adapter implementing `GeocodingProvider`
+(`suggest()` and `reverse()`).
+
+Public Nominatim is deliberately not used — its usage policy forbids
+autocomplete, and this app needs typeahead.
+
+### GPS behaviour
+
+- Permission is **never** requested when the map opens. On mount the app only
+  reads an existing permission (`getForegroundPermissionsAsync`) and, if it was
+  already granted and a fix resolves, uses it silently as pickup.
+- Otherwise pickup starts empty and both ends are chosen from the map or search.
+- **Use current location** in the search panel triggers the real request and
+  reuses the existing `expo-location` flow: denied, permanently denied (with an
+  Open settings link), GPS off, timeout and reverse-geocode failures all have
+  their own message.
+- A mapped tap whose address cannot be resolved shows an error and retry rather
+  than inventing an address.
 
 ## Running the app with the fares backend (Android)
 
@@ -181,10 +241,12 @@ against (`backend/tests/fixtures/`), so the two cannot drift.
 
 - `npx tsc --noEmit` — clean
 - `npx expo lint` — clean
-- `npm test` — 23 Node tests (link URLs, fare contract mapping/validation/errors)
+- `npm test` — 40 Node tests (link URLs, fare contract mapping/validation/errors,
+  map-location conversion, Photon URL building and GeoJSON parsing)
 - `npx expo export --platform android` — bundles
 - `backend: pytest` — 76 tests
 - Request mapping and response parsing exercised against the running backend
   (`HTTP 200`, nine estimates, unavailable Rapido cab preserved)
 - Not yet exercised on an emulator or device: the in-app loading, error and
-  retry states
+  retry states, map tile rendering, map tap selection and the live Photon
+  requests (the mapping is unit-tested, the network path is not)
