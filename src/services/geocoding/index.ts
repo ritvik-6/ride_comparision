@@ -14,7 +14,10 @@ import type { GeocodingProvider } from './types';
 export {
   GeocodingError,
   GEOCODING_MESSAGES,
+  geocodingErrorForStatus,
   isGeocodingError,
+  isRetryableGeocodingErrorKind,
+  RETRYABLE_GEOCODING_ERRORS,
 } from './types';
 export type {
   GeocodingErrorKind,
@@ -26,6 +29,7 @@ export {
   PHOTON_ATTRIBUTION,
   PHOTON_MIN_QUERY_LENGTH,
   PHOTON_RESULT_LIMIT,
+  PHOTON_USER_AGENT,
 } from './photonMapping';
 
 let provider: GeocodingProvider | null = null;

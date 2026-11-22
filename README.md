@@ -156,6 +156,25 @@ What the app does to stay within that policy: no request for queries shorter
 than 3 characters, a 450 ms debounce, one in-flight request at a time (cancelled
 when the query changes), an 8-second timeout, and a small per-query result cache.
 
+Every request sends an explicit `User-Agent` (`RideCompare/1.0 (Android; Expo)`,
+see `PHOTON_USER_AGENT`). This is required, not cosmetic: the public instance
+answers **403 Forbidden** to generic HTTP client agents, and Expo SDK 58 routes
+`fetch()` through `expo/fetch`, whose Android implementation sets no agent of its
+keep, so OkHttp's default `okhttp/x.y.z` reached the server and every search and
+reverse lookup came back 403 — surfacing as "the search rejected that request"
+and as coordinate-only pins.
+
+Failures are reported by what they are, and **Retry is only offered when a
+repeat could work** (timeout, network, 429, unreadable response). A 403 is a
+permanent block and a 400 is a rejected request — those point the rider at
+tapping the map instead of a button that is guaranteed to fail again.
+
+For a tapped point the app asks for five nearby candidates within 1 km and ranks
+them, so the pin resolves to a road, then a named place, then its locality,
+rather than whichever way Photon listed first. When nothing readable is nearby
+the pin keeps the exact tapped coordinate, labelled "Dropped pin" — the app
+ever invents a place name or address.
+
 To use another host, set `EXPO_PUBLIC_GEOCODING_BASE_URL` (no trailing slash).
 Nothing else changes: every screen calls `getGeocodingProvider()` from
 `src/services/geocoding/index.ts`, so swapping to a keyed service or a backend
@@ -202,8 +221,12 @@ changing `src/services/routing/index.ts`; nothing in the UI knows about OSRM.
   reuses the existing `expo-location` flow: denied, permanently denied (with an
   Open settings link), GPS off, timeout and reverse-geocode failures all have
   their own message.
-- A mapped tap whose address cannot be resolved shows an error and retry rather
-  than inventing an address.
+- A mapped tap whose address cannot be resolved keeps the pin, explains why and
+  only offers Retry for transient failures; it never invents an address.
+- The floating search sheet lifts clear of the on-screen keyboard (Android has
+  been edge-to-edge since SDK 54, where `adjustResize` no longer moves anything),
+  shortens its suggestion list while typing, and ignores map taps during typing
+  so a stray touch cannot move the rider's location.
 
 ## Running the app with the fares backend (Android)
 

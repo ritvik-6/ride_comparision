@@ -4,6 +4,7 @@ import {
   GEOCODING_MESSAGES,
   getGeocodingProvider,
   isGeocodingError,
+  isRetryableGeocodingErrorKind,
 } from '@/services/geocoding';
 import type { Coordinates, MapLocation } from '@/types';
 
@@ -22,6 +23,12 @@ export interface PlaceSuggestionsState {
   status: SuggestionsStatus;
   /** Safe to render message when status is `error`. */
   error: string | null;
+  /**
+   * Whether repeating the same query could work. A permanent rejection (for
+   * example HTTP 403 from the provider) is not retryable, so the UI must not
+   * offer a button that is guaranteed to fail again.
+   */
+  canRetry: boolean;
   /** Re-runs the last query, e.g. from a retry button. */
   retry: () => void;
 }
@@ -40,6 +47,7 @@ interface SettledOutcome {
   status: 'ready' | 'error';
   suggestions: readonly MapLocation[];
   error: string | null;
+  retryable: boolean;
 }
 
 /**
@@ -96,6 +104,7 @@ export function usePlaceSuggestions({
           status: 'ready',
           suggestions: results,
           error: null,
+          retryable: false,
         });
       })
       .catch((caught: unknown) => {
@@ -115,6 +124,10 @@ export function usePlaceSuggestions({
           error: isGeocodingError(caught)
             ? caught.message
             : GEOCODING_MESSAGES.network,
+          // An unrecognised failure is most likely a transport problem.
+          retryable: isGeocodingError(caught)
+            ? isRetryableGeocodingErrorKind(caught.kind)
+            : true,
         });
       });
 
@@ -144,6 +157,8 @@ export function usePlaceSuggestions({
       : NO_SUGGESTIONS,
     status,
     error: settled !== null && settled.status === 'error' ? settled.error : null,
+    canRetry:
+      settled !== null && settled.status === 'error' && settled.retryable,
     retry,
   };
 }

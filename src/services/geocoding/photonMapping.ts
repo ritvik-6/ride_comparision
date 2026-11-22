@@ -16,6 +16,30 @@ export const PHOTON_DEFAULT_BASE_URL = 'https://photon.komoot.io';
 /** Attribution shown next to the search results. */
 export const PHOTON_ATTRIBUTION = 'Search by Photon · © OpenStreetMap';
 
+/**
+ * User-Agent sent with every request.
+ *
+ * This is not cosmetic. The public Photon instance sits behind a filter that
+ * answers **403 Forbidden** to generic HTTP client agents — in particular
+ * anything starting with `okhttp/`. Expo SDK 58 replaces the global `fetch`
+ * with `expo/fetch`, whose Android implementation sets no User-Agent of its
+ * own, so OkHttp's default `okhttp/x.y.z` was what reached the server and every
+ * search and reverse lookup came back 403.
+ *
+ * Sending an explicit app agent both fixes that and identifies the client, as
+ * the fair-use policy asks. Keep it a single product token with an optional
+ * comment; no personal data.
+ */
+export const PHOTON_USER_AGENT = 'RideCompare/1.0 (Android; Expo)';
+
+/** Headers for every Photon request. */
+export function photonRequestHeaders(): Record<string, string> {
+  return {
+    Accept: 'application/json',
+    'User-Agent': PHOTON_USER_AGENT,
+  };
+}
+
 /** Queries shorter than this are not sent; autocomplete needs some signal. */
 export const PHOTON_MIN_QUERY_LENGTH = 3;
 
@@ -30,6 +54,16 @@ const PHOTON_LANGUAGE = 'en';
 
 /** How far from the tapped point a reverse result may come from, in km. */
 const PHOTON_REVERSE_RADIUS_KM = 1;
+
+/**
+ * Candidates requested for a reverse lookup.
+ *
+ * One was not enough: the single nearest feature is often something that makes
+ * a poor address (a platform, a junction way, a subway line). Asking for a few
+ * lets the ranking below pick a street, locality or landmark instead, while the
+ * tapped coordinate stays the source of truth.
+ */
+export const PHOTON_REVERSE_LIMIT = 5;
 
 const LATITUDE_LIMIT = 90;
 const LONGITUDE_LIMIT = 180;
@@ -112,7 +146,7 @@ export function buildPhotonReverseUrl(
   const params = new URLSearchParams({
     lat: String(point.latitude),
     lon: String(point.longitude),
-    limit: '1',
+    limit: String(PHOTON_REVERSE_LIMIT),
     radius: String(PHOTON_REVERSE_RADIUS_KM),
     lang: PHOTON_LANGUAGE,
   });
@@ -167,6 +201,7 @@ interface PhotonProperties {
   country: string | null;
   osmId: string | null;
   osmType: string | null;
+  osmKey: string | null;
 }
 
 const readProperties = (properties: unknown): PhotonProperties => {
@@ -190,6 +225,7 @@ const readProperties = (properties: unknown): PhotonProperties => {
     country: readString(source.country),
     osmId: osmId === null ? null : String(osmId),
     osmType: readString(source.osm_type),
+    osmKey: readString(source.osm_key),
   };
 };
 
@@ -211,11 +247,15 @@ export function parsePhotonFeature(feature: unknown): MapLocation | null {
   }
 
   const fields = readProperties(properties);
+  // A road's own name *is* its street line: Photon reports highways with
+  // `name` and no `street`, so without this the resolved address began at the
+  // locality and lost the road the rider is standing on.
+  const roadName = fields.osmKey === 'highway' ? fields.name : null;
   // "3 Olympischer Platz" reads as one address line, so no comma here.
   const streetLine =
     fields.housenumber && fields.street
       ? `${fields.housenumber} ${fields.street}`
-      : (fields.housenumber ?? fields.street);
+      : (fields.street ?? roadName ?? fields.housenumber);
   const area = fields.locality ?? fields.district ?? fields.county;
 
   const formattedAddress =
@@ -249,6 +289,77 @@ export function parsePhotonFeature(feature: unknown): MapLocation | null {
     ...(placeId ? { placeId } : {}),
     source: 'search',
   };
+}
+
+/**
+ * How useful a reverse candidate is as a readable answer for a tapped point.
+ *
+ * A road beats a shop or a bare platform, because "Market road, Boiguda" is a
+ * better pickup point than the name of whichever business shares the building.
+ * The score only orders candidates Photon already returned as nearby — it never
+ * invents anything, and equal scores keep the server's own distance ordering.
+ */
+export function scoreReverseFeature(feature: unknown): number {
+  if (typeof feature !== 'object' || feature === null) {
+    return -1;
+  }
+
+  const fields = readProperties((feature as { properties?: unknown }).properties);
+  let score = 0;
+
+  if (fields.osmKey === 'highway') {
+    // The road itself is the most actionable answer for "where is this?".
+    score += 6;
+  }
+
+  if (fields.street) {
+    score += 3;
+  }
+
+  if (fields.name) {
+    score += 2;
+  }
+
+  if (fields.locality) {
+    score += 2;
+  }
+
+  if (fields.housenumber) {
+    score += 1;
+  }
+
+  if (fields.district) {
+    score += 1;
+  }
+
+  return score;
+}
+
+/**
+ * Parses a reverse-geocoding collection, best candidate first.
+ *
+ * The sort is stable (ties keep the provider's distance order), so the same
+ * point and payload always resolve to the same place.
+ */
+export function parsePhotonReverseResponse(
+  payload: unknown,
+): MapLocation[] | null {
+  if (typeof payload !== 'object' || payload === null) {
+    return null;
+  }
+
+  const { features } = payload as { features?: unknown };
+
+  if (!Array.isArray(features)) {
+    return null;
+  }
+
+  const ranked = features
+    .map((feature, index) => ({ feature, index, score: scoreReverseFeature(feature) }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((entry) => entry.feature);
+
+  return parsePhotonResponse({ type: 'FeatureCollection', features: ranked });
 }
 
 /**

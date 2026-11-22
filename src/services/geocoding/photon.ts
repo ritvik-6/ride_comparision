@@ -4,14 +4,17 @@ import {
   buildPhotonReverseUrl,
   buildPhotonSearchUrl,
   parsePhotonResponse,
+  parsePhotonReverseResponse,
   PHOTON_ATTRIBUTION,
   PHOTON_DEFAULT_BASE_URL,
   PHOTON_MIN_QUERY_LENGTH,
   PHOTON_RESULT_LIMIT,
+  photonRequestHeaders,
 } from './photonMapping';
 import {
   GeocodingError,
   GEOCODING_MESSAGES,
+  geocodingErrorForStatus,
   type GeocodingProvider,
   type ReverseOptions,
   type SuggestOptions,
@@ -77,18 +80,6 @@ function toGeocodingError(
   return new GeocodingError('network', GEOCODING_MESSAGES.network);
 }
 
-function statusToError(status: number): GeocodingError {
-  if (status === 429) {
-    return new GeocodingError('rate-limited', GEOCODING_MESSAGES['rate-limited']);
-  }
-
-  if (status >= 500) {
-    return new GeocodingError('network', GEOCODING_MESSAGES.network);
-  }
-
-  return new GeocodingError('rejected', GEOCODING_MESSAGES.rejected);
-}
-
 export function createPhotonProvider({
   baseUrl = PHOTON_DEFAULT_BASE_URL,
   fetchImpl = fetch,
@@ -109,7 +100,8 @@ export function createPhotonProvider({
 
   const request = async (
     url: string,
-    externalSignal?: AbortSignal,
+    externalSignal: AbortSignal | undefined,
+    parse: (payload: unknown) => MapLocation[] | null,
   ): Promise<MapLocation[]> => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -128,12 +120,23 @@ export function createPhotonProvider({
     try {
       const response = await fetchImpl(url, {
         method: 'GET',
-        headers: { Accept: 'application/json' },
+        // An explicit User-Agent is required: without one OkHttp's default
+        // agent is rejected with 403 by the public Photon instance.
+        headers: photonRequestHeaders(),
         signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw statusToError(response.status);
+        const failure = geocodingErrorForStatus(response.status);
+
+        if (__DEV__) {
+          // The status is the one detail worth logging; the body is not.
+          console.warn(
+            `[geocoding] ${failure.kind} (HTTP ${response.status}) for ${new URL(url).pathname}`,
+          );
+        }
+
+        throw failure;
       }
 
       let payload: unknown;
@@ -144,7 +147,7 @@ export function createPhotonProvider({
         throw new GeocodingError('malformed', GEOCODING_MESSAGES.malformed);
       }
 
-      const locations = parsePhotonResponse(payload);
+      const locations = parse(payload);
 
       if (locations === null) {
         throw new GeocodingError('malformed', GEOCODING_MESSAGES.malformed);
@@ -183,7 +186,11 @@ export function createPhotonProvider({
         limit: options.limit ?? PHOTON_RESULT_LIMIT,
       });
 
-      const locations = await request(url, options.signal);
+      const locations = await request(
+        url,
+        options.signal,
+        parsePhotonResponse,
+      );
       remember(key, locations);
 
       return locations;
@@ -191,7 +198,13 @@ export function createPhotonProvider({
 
     async reverse(point, options: ReverseOptions = {}) {
       const url = buildPhotonReverseUrl(baseUrl, point);
-      const locations = await request(url, options.signal);
+      // Ranked, so a tap resolves to a street, locality or landmark rather than
+      // whichever nearby way Photon happened to list first.
+      const locations = await request(
+        url,
+        options.signal,
+        parsePhotonReverseResponse,
+      );
 
       // Nothing within the search radius is a normal outcome, not an error.
       return locations[0] ?? null;

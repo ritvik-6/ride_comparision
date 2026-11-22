@@ -32,9 +32,29 @@ export interface ReverseGeocoder {
   ): Promise<MapLocation | null>;
 }
 
+/**
+ * Failure kinds where the same lookup may succeed later.
+ *
+ * Mirrors `RETRYABLE_GEOCODING_ERRORS` in `./types`; kept local because this
+ * module must stay free of runtime imports so it can be tested in Node. The
+ * test suite asserts the two lists stay identical.
+ */
+export const RETRYABLE_LOOKUP_ERROR_KINDS = [
+  'timeout',
+  'network',
+  'rate-limited',
+  'malformed',
+] as const;
+
 export type PointLookup =
   | { status: 'resolved'; location: MapLocation }
-  | { status: 'unaddressed'; location: MapLocation; message: string }
+  /** `retryable` tells the UI whether a Retry action is worth offering. */
+  | {
+      status: 'unaddressed';
+      location: MapLocation;
+      message: string;
+      retryable: boolean;
+    }
   | { status: 'cancelled' };
 
 /** Formats a point for display: "17.42390, 78.47380". */
@@ -71,6 +91,18 @@ const messageFrom = (error: unknown): string => {
   return ADDRESS_LOOKUP_FAILED;
 };
 
+const isRetryableError = (error: unknown): boolean => {
+  const kind =
+    typeof error === 'object' && error !== null
+      ? (error as { kind?: unknown }).kind
+      : null;
+
+  return (
+    typeof kind === 'string' &&
+    (RETRYABLE_LOOKUP_ERROR_KINDS as readonly string[]).includes(kind)
+  );
+};
+
 /**
  * Resolves one tapped point.
  *
@@ -94,6 +126,9 @@ export async function lookupPoint(
         status: 'unaddressed',
         location: pendingLocation(point),
         message: NO_ADDRESS_NEAR_POINT,
+        // A nearby-but-unreadable answer is not a transport failure: retrying
+        // the same point returns the same emptiness.
+        retryable: false,
       };
     }
 
@@ -111,6 +146,7 @@ export async function lookupPoint(
       status: 'unaddressed',
       location: pendingLocation(point),
       message: messageFrom(error),
+      retryable: isRetryableError(error),
     };
   }
 }

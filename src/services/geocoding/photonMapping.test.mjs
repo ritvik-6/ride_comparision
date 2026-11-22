@@ -6,8 +6,13 @@ import {
   buildPhotonSearchUrl,
   parsePhotonFeature,
   parsePhotonResponse,
+  parsePhotonReverseResponse,
+  photonRequestHeaders,
   PHOTON_MIN_QUERY_LENGTH,
   PHOTON_RESULT_LIMIT,
+  PHOTON_REVERSE_LIMIT,
+  PHOTON_USER_AGENT,
+  scoreReverseFeature,
 } from './photonMapping.ts';
 
 /**
@@ -64,7 +69,7 @@ test('a trailing slash on the base URL does not double up', () => {
   assert.ok(url.startsWith('https://photon.example/api?'));
 });
 
-test('reverse URL asks for one nearby result', () => {
+test('reverse URL asks for several candidates within one kilometre', () => {
   const params = searchParams(
     buildPhotonReverseUrl('https://photon.komoot.io', {
       latitude: 17.4239,
@@ -74,8 +79,23 @@ test('reverse URL asks for one nearby result', () => {
 
   assert.equal(params.get('lat'), '17.4239');
   assert.equal(params.get('lon'), '78.4738');
-  assert.equal(params.get('limit'), '1');
+  // One candidate was often an unusable feature (a way, a platform, a line);
+  // several let the ranking pick a real street or landmark.
+  assert.equal(params.get('limit'), String(PHOTON_REVERSE_LIMIT));
+  assert.ok(PHOTON_REVERSE_LIMIT > 1);
+  assert.equal(params.get('radius'), '1');
   assert.equal(params.get('lang'), 'en');
+});
+
+test('every request identifies the app and never looks like a bare HTTP client', () => {
+  const headers = photonRequestHeaders();
+
+  assert.equal(headers.Accept, 'application/json');
+  assert.equal(headers['User-Agent'], PHOTON_USER_AGENT);
+  // Regression guard for the bug this fixed: photokomoot answers 403 to
+  // `okhttp/*`, which is what expo/fetch inherited when no agent was set.
+  assert.equal(/^okhttp\//i.test(PHOTON_USER_AGENT), false);
+  assert.match(PHOTON_USER_AGENT, /^RideCompare\//);
 });
 
 test('a feature becomes a search-sourced location with an OSM id', () => {
@@ -176,4 +196,94 @@ test('an empty collection is an empty result, a bad payload is not', () => {
 
 test('the minimum query length keeps short typing off the network', () => {
   assert.equal(PHOTON_MIN_QUERY_LENGTH, 3);
+});
+
+/** Properties as the public Photon instance returns them near Madhapur. */
+const road = {
+  osm_type: 'W',
+  osm_id: 1209035335,
+  osm_key: 'highway',
+  type: 'street',
+  name: 'HITEC City Road',
+  locality: 'Madhapur',
+  district: 'Ward 104 Kondapur',
+  state: 'Telangana',
+  country: 'India',
+};
+
+const unnamedPlatform = {
+  osm_type: 'N',
+  osm_id: 555,
+  type: 'house',
+  name: 'Platform 2',
+};
+
+const namedBuilding = {
+  osm_type: 'W',
+  osm_id: 777,
+  type: 'house',
+  name: 'Cyber Towers',
+  street: 'HITEC City Road',
+  locality: 'Madhapur',
+  state: 'Telangana',
+  country: 'India',
+};
+
+const reverseCollection = (features) => ({ type: 'FeatureCollection', features });
+
+const pointFeature = (properties, coordinates = [78.3772, 17.4435]) => ({
+  type: 'Feature',
+  geometry: { type: 'Point', coordinates },
+  properties,
+});
+
+test('reverse parsing prefers a street with its locality over a bare name', () => {
+  const locations = parsePhotonReverseResponse(
+    reverseCollection([
+      pointFeature(unnamedPlatform, [78.3773, 17.4436]),
+      pointFeature(road), // farther in the list, but the better answer
+    ]),
+  );
+
+  assert.ok(locations);
+  assert.equal(locations.length, 2);
+  assert.equal(locations[0].displayName, 'HITEC City Road');
+  assert.equal(
+    locations[0].formattedAddress,
+    'HITEC City Road, Madhapur, Telangana, India',
+  );
+  assert.equal(locations[1].displayName, 'Platform 2');
+});
+
+test('reverse ranking is stable for equal candidates', () => {
+  const [first, second] = parsePhotonReverseResponse(
+    reverseCollection([
+      pointFeature({ ...road, osm_id: 1, name: 'Road One' }),
+      pointFeature({ ...road, osm_id: 2, name: 'Road Two' }),
+    ]),
+  );
+
+  // Equal scores keep the server's own distance order, so the same point
+  // always resolves to the same place.
+  assert.equal(first.displayName, 'Road One');
+  assert.equal(second.displayName, 'Road Two');
+});
+
+test('a landmark outranks a road with fewer address parts', () => {
+  assert.ok(scoreReverseFeature(pointFeature(namedBuilding)) > 0);
+  assert.ok(
+    scoreReverseFeature(pointFeature(namedBuilding)) >
+      scoreReverseFeature(pointFeature(unnamedPlatform)),
+  );
+});
+
+test('reverse parsing reports an unreadable payload instead of guessing', () => {
+  assert.equal(parsePhotonReverseResponse({ nope: true }), null);
+  assert.equal(parsePhotonReverseResponse(null), null);
+  assert.deepEqual(parsePhotonReverseResponse(reverseCollection([])), []);
+  assert.deepEqual(
+    parsePhotonReverseResponse(reverseCollection([pointFeature({})])),
+    [],
+    'a feature with no name or address is dropped, never invented',
+  );
 });
