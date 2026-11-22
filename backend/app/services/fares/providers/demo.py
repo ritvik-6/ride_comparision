@@ -62,13 +62,19 @@ class DemoAdapter:
     async def compare(self, request: QuoteRequest) -> Sequence[ProviderQuote]:
         """Build demo quotes for the request's route.
 
-        Only the place ids reach the generator, exactly as before; coordinates
-        are never turned into a fare.
+        The place ids still reach the generator, so an id-only request produces
+        exactly the estimates it always did. When the client measured a road
+        route, that distance and duration price the same offer table instead;
+        coordinates on their own are never turned into a fare.
         """
+
+        route = request.route
 
         estimates = get_demo_fare_comparison(
             pickup_id=request.pickup.id,
             destination_id=request.destination.id,
+            route_distance_km=None if route is None else route.distance_km,
+            route_duration_minutes=None if route is None else route.duration_minutes,
         )
 
         requested = set(request.categories)

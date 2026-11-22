@@ -59,6 +59,9 @@ export default function CompareScreen() {
   const destinationAddress = params.destinationAddress;
   const destinationLatitude = params.destinationLatitude;
   const destinationLongitude = params.destinationLongitude;
+  // The road route measured on the map screen; absent when routing failed.
+  const routeDistanceKm = params.routeDistanceKm;
+  const routeDurationMinutes = params.routeDurationMinutes;
 
   const route = useMemo(
     () =>
@@ -73,6 +76,8 @@ export default function CompareScreen() {
         destinationAddress,
         destinationLatitude,
         destinationLongitude,
+        routeDistanceKm,
+        routeDurationMinutes,
       }),
     [
       pickupId,
@@ -85,6 +90,8 @@ export default function CompareScreen() {
       destinationAddress,
       destinationLatitude,
       destinationLongitude,
+      routeDistanceKm,
+      routeDurationMinutes,
     ],
   );
 
@@ -140,7 +147,11 @@ export default function CompareScreen() {
         <ComparisonHeader onBack={goBack} />
 
         {route ? (
-          <RouteSummary pickup={route.pickup} destination={route.destination} />
+          <RouteSummary
+            pickup={route.pickup}
+            destination={route.destination}
+            route={route.route}
+          />
         ) : null}
 
         {children}

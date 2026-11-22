@@ -1,9 +1,12 @@
 """Deterministic demo fare estimates.
 
-This is a line-for-line port of ``src/services/fares/demoFares.ts`` in the mobile
-app, so a route produces the same numbers on the server as it does on the
-device. It is still *sample data*: no distance is measured, no provider is
-called, and nothing here is a live quote.
+The id-based path is a line-for-line port of ``src/services/fares/demoFares.ts``
+in the mobile app, so a route produces the same numbers on the server as it does
+on the device. When the app supplies a measured road route, the same offer table
+is priced from that distance and duration instead.
+
+Either way this is *sample data*: no provider is called, the rates are
+illustrative, and nothing here is a live quote.
 
 Two JavaScript behaviours have to be reproduced exactly, or the two
 implementations drift apart on some routes:
@@ -44,6 +47,20 @@ _FARE_FACTOR_BASE: Final = 0.92
 _FARE_FACTOR_STEPS: Final = 21
 _ETA_OFFSET_STEPS: Final = 4
 _FARE_GRANULARITY: Final = 5
+
+#: Sample per-kilometre rates used when the app supplies a measured road route.
+#: These are illustrative numbers for the demo build, not any provider's tariff.
+_ROUTE_RATE_PER_KM: Final = {"bike": 8.0, "auto": 13.0, "cab": 21.0}
+
+#: Sample flag-fall for each tier, so a very short trip is still sensible.
+_ROUTE_BASE_FARE: Final = {"bike": 15.0, "auto": 25.0, "cab": 45.0}
+
+#: Sample provider positioning. Not verified pricing: every adapter here is demo.
+_ROUTE_PROVIDER_FACTOR: Final = {"rapido": 0.94, "uber": 1.06, "ola": 1.0}
+
+#: Extra sample pickup wait per this many minutes of driving time.
+_ROUTE_WAIT_STEP_MINUTES: Final = 15
+_ROUTE_WAIT_STEP_CAP: Final = 4
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,21 +153,86 @@ def _route_seed(pickup_id: str, destination_id: str) -> int:
     return stable_hash(f"{pickup_id}->{destination_id}")
 
 
-def get_demo_fare_comparison(
-    pickup_id: str,
-    destination_id: str,
-) -> tuple[DemoFareEstimate, ...]:
-    """Build the demo comparison for one route.
+def _id_variation(pickup_id: str, destination_id: str) -> tuple[float, int]:
+    """Sample variation spread by the route's ids.
 
-    Results are deterministic: the same ids always produce the same estimates,
-    and the ids only spread the sample numbers so two routes do not look
-    identical. There is no distance, GPS or clock input, and availability comes
-    from the static offer table rather than a lookup.
+    Used when the client has no measured route. The ids only spread the sample
+    numbers so two routes do not look identical; nothing is measured.
     """
 
     seed = _route_seed(pickup_id, destination_id)
-    fare_factor = _FARE_FACTOR_BASE + (seed % _FARE_FACTOR_STEPS) / 100
-    eta_offset = seed % _ETA_OFFSET_STEPS
+
+    return _FARE_FACTOR_BASE + (seed % _FARE_FACTOR_STEPS) / 100, seed % _ETA_OFFSET_STEPS
+
+
+def _estimate_from_route(
+    offer: DemoOffer,
+    distance_km: float,
+    duration_minutes: float,
+) -> DemoFareEstimate:
+    """Price one tier from a measured road route.
+
+    The fare grows with the driving distance and the pickup wait grows with the
+    driving time, so a longer trip is visibly more expensive and slower to reach
+    than a short one. Every number is still sample data: no provider is called,
+    and the rates above are illustrative rather than anyone's tariff.
+    """
+
+    distance_component = (
+        _ROUTE_BASE_FARE[offer.category]
+        + _ROUTE_RATE_PER_KM[offer.category] * distance_km
+    )
+    fare = distance_component * _ROUTE_PROVIDER_FACTOR[offer.provider]
+
+    extra_wait = min(
+        int(duration_minutes // _ROUTE_WAIT_STEP_MINUTES),
+        _ROUTE_WAIT_STEP_CAP,
+    )
+
+    return DemoFareEstimate(
+        id=f"{offer.provider}-{offer.category}",
+        provider=offer.provider,
+        category=offer.category,
+        tier_label=offer.tier_label,
+        fare=_round_to_five(fare),
+        currency=CURRENCY,
+        eta_minutes=offer.base_eta_minutes + extra_wait,
+        available=offer.available,
+    )
+
+
+def get_demo_fare_comparison(
+    pickup_id: str,
+    destination_id: str,
+    route_distance_km: float | None = None,
+    route_duration_minutes: float | None = None,
+) -> tuple[DemoFareEstimate, ...]:
+    """Build the demo comparison for one route.
+
+    Two inputs are supported, and they never mix:
+
+    * With a measured road route (both metrics present), fares derive from the
+      distance and waits from the duration. Results are deterministic for the
+      same route because the arithmetic is.
+    * Without one, the previous id-based sample variation is used unchanged, so
+      an older client keeps getting exactly the same payload it always did.
+
+    Availability always comes from the static offer table, never from a lookup.
+    """
+
+    has_route = route_distance_km is not None and route_duration_minutes is not None
+
+    if has_route:
+        return tuple(
+            _estimate_from_route(
+                offer,
+                float(route_distance_km),
+                float(route_duration_minutes),
+            )
+            for offer in DEMO_OFFERS
+        )
+
+    fare_factor, eta_offset = _id_variation(pickup_id, destination_id)
 
     return tuple(
         DemoFareEstimate(

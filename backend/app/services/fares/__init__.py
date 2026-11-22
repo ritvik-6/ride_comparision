@@ -38,6 +38,7 @@ from app.services.fares.models import (
     QuoteSource,
     QuoteStatus,
     RideCategory,
+    RouteMetrics,
 )
 from app.services.fares.notices import LIVE_ESTIMATES_NOTICE, LIVE_NO_QUOTES_NOTICE
 from app.services.fares.providers import (
@@ -90,6 +91,7 @@ __all__ = [
     "QuoteStatus",
     "RapidoAdapter",
     "RideCategory",
+    "RouteMetrics",
     "UberAdapter",
     "build_adapters",
     "configured_providers",

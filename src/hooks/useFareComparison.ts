@@ -55,7 +55,7 @@ export function useFareComparison(
     let active = true;
     const attemptId = attempt;
 
-    fetchFareComparison(route.pickup, route.destination)
+    fetchFareComparison(route.pickup, route.destination, route.route)
       .then((comparison) => {
         if (active) {
           setLoaded({ route, attempt: attemptId, comparison, error: null });

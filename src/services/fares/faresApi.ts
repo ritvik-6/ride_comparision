@@ -1,6 +1,6 @@
 import { isApiConfigured } from '@/config/env';
 import { apiRequest } from '@/services/api/client';
-import type { FareComparisonResult, Place } from '@/types';
+import type { FareComparisonResult, Place, RouteMetrics } from '@/types';
 
 import {
   createFareError,
@@ -19,6 +19,7 @@ import {
 export async function fetchFareComparison(
   pickup: Place,
   destination: Place,
+  route: RouteMetrics | null = null,
 ): Promise<FareComparisonResult> {
   if (!isApiConfigured) {
     throw createFareError('unconfigured');
@@ -26,7 +27,7 @@ export async function fetchFareComparison(
 
   const payload = await apiRequest<unknown>(FARES_COMPARE_PATH, {
     method: 'POST',
-    body: toFareRequest(pickup, destination),
+    body: toFareRequest(pickup, destination, route),
   });
 
   return parseFareComparisonResponse(payload);

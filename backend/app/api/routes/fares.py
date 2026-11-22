@@ -21,6 +21,7 @@ from app.schemas.fares import (
     PlaceInput,
     PlaceSummary,
     ProviderStateModel,
+    RouteMetricsInput,
 )
 from app.services.fares import DEMO_ESTIMATES_NOTICE
 from app.services.fares.aggregator import FareAggregator
@@ -31,6 +32,7 @@ from app.services.fares.models import (
     ProviderState,
     QuoteRequest,
     QuoteSource,
+    RouteMetrics,
 )
 from app.services.fares.notices import LIVE_ESTIMATES_NOTICE, LIVE_NO_QUOTES_NOTICE
 
@@ -65,10 +67,23 @@ def _to_place_ref(place: PlaceInput) -> PlaceRef:
     )
 
 
+def _to_route_metrics(route: RouteMetricsInput | None) -> RouteMetrics | None:
+    """Validated road metrics, or None when the client measured no route."""
+
+    if route is None:
+        return None
+
+    return RouteMetrics(
+        distance_km=route.distance_km,
+        duration_minutes=route.duration_minutes,
+    )
+
+
 def _to_quote_request(payload: FareCompareRequest) -> QuoteRequest:
     return QuoteRequest(
         pickup=_to_place_ref(payload.pickup),
         destination=_to_place_ref(payload.destination),
+        route=_to_route_metrics(payload.route),
     )
 
 
@@ -102,7 +117,10 @@ def _to_provider_state_model(state: ProviderState) -> ProviderStateModel:
     description=(
         "Returns fares and ETAs for Rapido, Uber and Ola across the Bike, Auto "
         "and Cab tiers. Responses are demo estimates by default (`source: "
-        "'demo'`, deterministic per pickup/destination id); authorised provider "
+        "'demo'`); when the optional `route` object is supplied the estimates are "
+        "priced from that measured road distance and duration, otherwise the "
+        "sample variation stays deterministic per pickup/destination id. "
+        "Authorised provider "
         "quotes are opt-in via PROVIDER_MODE and reported with `source: "
         "'provider-api'` plus a per-provider status list. A provider that fails "
         "or times out contributes no estimate and never removes another "

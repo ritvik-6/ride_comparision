@@ -101,6 +101,45 @@ test('request drops unusable coordinates instead of sending a bad pair', () => {
   }
 });
 
+test('request carries the measured road route', () => {
+  const body = toFareRequest(HITECH_CITY, GACHIBOWLI, {
+    distanceKm: 12.4,
+    durationMinutes: 28,
+  });
+
+  assert.deepEqual(body.route, { distanceKm: 12.4, durationMinutes: 28 });
+});
+
+test('request omits an absent or implausible route rather than sending one', () => {
+  const cases = [
+    null,
+    undefined,
+    { distanceKm: 0, durationMinutes: 20 },
+    { distanceKm: -4, durationMinutes: 20 },
+    { distanceKm: 8, durationMinutes: 0 },
+    { distanceKm: 600, durationMinutes: 20 },
+    { distanceKm: 20, durationMinutes: 5_000 },
+    { distanceKm: Number.NaN, durationMinutes: 20 },
+  ];
+
+  for (const route of cases) {
+    const body = toFareRequest(HITECH_CITY, GACHIBOWLI, route);
+
+    assert.equal(
+      'route' in body,
+      false,
+      `expected ${JSON.stringify(route)} to be dropped`,
+    );
+  }
+});
+
+test('a request without route metrics keeps the previous payload', () => {
+  assert.deepEqual(
+    toFareRequest(HITECH_CITY, GACHIBOWLI),
+    toFareRequest(HITECH_CITY, GACHIBOWLI, null),
+  );
+});
+
 test('response maps onto the app fare types', () => {
   const result = parseFareComparisonResponse(
     backendResponse({

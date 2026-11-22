@@ -82,11 +82,39 @@ class PlaceInput(CamelModel):
     )
 
 
+class RouteMetricsInput(CamelModel):
+    """Measured road distance and driving time, as calculated by the app.
+
+    Both values must be positive and plausible: a zero, negative or absurd figure
+    is rejected instead of being priced, so an estimate can never be built on an
+    invented distance.
+    """
+
+    distance_km: float = Field(
+        gt=0,
+        le=500,
+        description="Road distance in kilometres, measured by a routing service.",
+    )
+    duration_minutes: float = Field(
+        gt=0,
+        le=1_440,
+        description="Estimated driving time in minutes for that route.",
+    )
+
+
 class FareCompareRequest(CamelModel):
     """Body of ``POST /api/v1/fares/compare``."""
 
     pickup: PlaceInput = Field(description="Where the ride starts.")
     destination: PlaceInput = Field(description="Where the ride ends.")
+    route: RouteMetricsInput | None = Field(
+        default=None,
+        description=(
+            "Measured road route. When present, demo fares are priced from this "
+            "distance and duration; when absent, the sample variation is keyed "
+            "off the place ids as before."
+        ),
+    )
 
 
 class PlaceSummary(CamelModel):

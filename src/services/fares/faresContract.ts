@@ -5,6 +5,7 @@ import type {
   Place,
   RideCategory,
   RideProvider,
+  RouteMetrics,
 } from '@/types';
 
 /**
@@ -29,6 +30,12 @@ const SOURCES: readonly FareQuoteSource[] = ['demo', 'provider-api'];
 const LATITUDE_BOUND = 90;
 const LONGITUDE_BOUND = 180;
 
+// Mirrors the plausibility bounds in `utils/routeMetrics`. They are repeated here
+// rather than imported because this module deliberately has no runtime imports,
+// so it can be unit tested in plain Node; see the note at the top.
+const MAX_ROUTE_DISTANCE_KM = 500;
+const MAX_ROUTE_DURATION_MINUTES = 1_440;
+
 export interface FareRequestCoordinates {
   latitude: number;
   longitude: number;
@@ -41,10 +48,24 @@ export interface FareRequestPlace {
   coordinates?: FareRequestCoordinates;
 }
 
+/**
+ * Road metrics measured by the routing service.
+ *
+ * Sent so the backend can price the trip against a real driving distance
+ * instead of a route-identity hash. It is measured, never inferred: when the
+ * route could not be calculated the field is omitted and the backend says so
+ * through its own sample-variation path.
+ */
+export interface FareRequestRoute {
+  distanceKm: number;
+  durationMinutes: number;
+}
+
 /** Body of `POST /api/v1/fares/compare`. */
 export interface FareCompareRequest {
   pickup: FareRequestPlace;
   destination: FareRequestPlace;
+  route?: FareRequestRoute;
 }
 
 /** True only for a complete, in-range position. */
@@ -82,15 +103,45 @@ const toRequestPlace = (place: Place): FareRequestPlace => {
   return request;
 };
 
-/** Maps the two selected places onto the backend request schema. */
+/** True only for a positive, finite, plausible pair of road metrics. */
+const isUsableRoute = (
+  route: RouteMetrics | null | undefined,
+): route is RouteMetrics =>
+  route !== null &&
+  route !== undefined &&
+  Number.isFinite(route.distanceKm) &&
+  Number.isFinite(route.durationMinutes) &&
+  route.distanceKm > 0 &&
+  route.distanceKm <= MAX_ROUTE_DISTANCE_KM &&
+  route.durationMinutes > 0 &&
+  route.durationMinutes <= MAX_ROUTE_DURATION_MINUTES;
+
+/**
+ * Maps the two selected places, and the measured road route, onto the backend
+ * request schema.
+ *
+ * The route is included only when it is a complete and plausible measurement; a
+ * partial or out-of-range pair is dropped, so the request stays valid rather than
+ * being rejected with a 422.
+ */
 export function toFareRequest(
   pickup: Place,
   destination: Place,
+  route: RouteMetrics | null = null,
 ): FareCompareRequest {
-  return {
+  const request: FareCompareRequest = {
     pickup: toRequestPlace(pickup),
     destination: toRequestPlace(destination),
   };
+
+  if (isUsableRoute(route)) {
+    request.route = {
+      distanceKm: route.distanceKm,
+      durationMinutes: route.durationMinutes,
+    };
+  }
+
+  return request;
 }
 
 /** Why a comparison could not be shown. */

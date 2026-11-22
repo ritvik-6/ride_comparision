@@ -9,6 +9,7 @@ to know how a quote was obtained.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from enum import Enum
 from typing import Final
@@ -171,16 +172,47 @@ class PlaceRef:
 
 
 @dataclass(frozen=True, slots=True)
+class RouteMetrics:
+    """Measured road distance and driving time for the requested trip.
+
+    The values come from the app's routing service. They are validated at the
+    edge: a non-positive or implausible figure is rejected rather than priced,
+    because a made-up distance is exactly what these estimates must not use.
+    """
+
+    distance_km: float
+    duration_minutes: float
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.distance_km) or not 0 < self.distance_km <= 500:
+            raise ValueError(
+                f"distance_km must be finite and within (0, 500] (got {self.distance_km!r})"
+            )
+
+        if (
+            not math.isfinite(self.duration_minutes)
+            or not 0 < self.duration_minutes <= 1_440
+        ):
+            raise ValueError(
+                "duration_minutes must be finite and within (0, 1440] "
+                f"(got {self.duration_minutes!r})"
+            )
+
+
+@dataclass(frozen=True, slots=True)
 class QuoteRequest:
     """A normalised request handed to every adapter.
 
     ``categories`` lets an adapter skip tiers it does not care about, and keeps
     the domain able to express a partial comparison later (e.g. one tier only).
+    ``route`` carries the measured road metrics when the client has them; adapters
+    that cannot use them simply ignore it.
     """
 
     pickup: PlaceRef
     destination: PlaceRef
     categories: tuple[RideCategory, ...] = CATEGORY_ORDER
+    route: RouteMetrics | None = None
 
 
 @dataclass(frozen=True, slots=True)
