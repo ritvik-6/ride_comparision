@@ -1,10 +1,11 @@
 import { Ionicons } from '@react-native-vector-icons/ionicons';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppButton } from '@/components/ui/AppButton';
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/theme';
-import type { LocationField, MapLocation } from '@/types';
+import type { LocationField, MapLocation, RoutePlan } from '@/types';
+import { formatDistance, formatDuration } from '@/utils/routeMetrics';
 
 export interface RouteSummaryPanelProps {
   pickup: MapLocation;
@@ -16,6 +17,16 @@ export interface RouteSummaryPanelProps {
   bottomInset: number;
   /** Tile and data attribution, kept visible with the map on screen. */
   attribution: string;
+  /** Set only once the driving route has been calculated. */
+  route: RoutePlan | null;
+  /** `loading` while the route request is in flight. */
+  routeStatus: 'idle' | 'loading' | 'success' | 'error';
+  /** Rider-facing reason the route could not be calculated. */
+  routeError: string | null;
+  canRetryRoute: boolean;
+  onRetryRoute: () => void;
+  /** Attribution required by the routing service once a route is shown. */
+  routingAttribution: string;
   onHeightChange: (height: number) => void;
 }
 
@@ -72,6 +83,12 @@ export function RouteSummaryPanel({
   onConfirm,
   bottomInset,
   attribution,
+  route,
+  routeStatus,
+  routeError,
+  canRetryRoute,
+  onRetryRoute,
+  routingAttribution,
   onHeightChange,
 }: RouteSummaryPanelProps) {
   return (
@@ -107,6 +124,50 @@ export function RouteSummaryPanel({
         <RouteRow field="destination" location={destination} onEdit={onEdit} />
       </View>
 
+      {routeStatus === 'error' ? (
+        <View style={styles.routeNotice} accessibilityLiveRegion="polite">
+          <Ionicons
+            name="alert-circle-outline"
+            size={16}
+            color={colors.danger}
+          />
+          <AppText variant="caption" style={styles.routeNoticeText}>
+            {routeError ??
+              'The driving route could not be calculated, so no road distance is available.'}
+          </AppText>
+          {canRetryRoute ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Calculate the route again"
+              onPress={onRetryRoute}
+              hitSlop={8}
+            >
+              <AppText variant="caption" style={styles.retry}>
+                Retry
+              </AppText>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : route ? (
+        <View style={styles.routeLine}>
+          <Ionicons name="git-branch-outline" size={16} color={colors.accent} />
+          <AppText variant="label" style={styles.routeMetrics}>
+            {formatDistance(route.distanceKm)} ·{' '}
+            {formatDuration(route.durationMinutes)} drive
+          </AppText>
+          <AppText variant="caption" style={styles.routeSource}>
+            Road route
+          </AppText>
+        </View>
+      ) : (
+        <View style={styles.routeLine} accessibilityLiveRegion="polite">
+          <ActivityIndicator size="small" color={colors.accent} />
+          <AppText variant="caption" style={styles.routePending}>
+            Calculating the driving route…
+          </AppText>
+        </View>
+      )}
+
       <AppButton
         label="Compare fares"
         onPress={onConfirm}
@@ -117,7 +178,7 @@ export function RouteSummaryPanel({
       />
 
       <AppText variant="caption" style={styles.attribution}>
-        {attribution}
+        {route ? `${attribution} · ${routingAttribution}` : attribution}
       </AppText>
     </View>
   );
@@ -226,6 +287,46 @@ const styles = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
     backgroundColor: colors.border,
     marginLeft: 26,
+  },
+  routeLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    minHeight: 28,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceMuted,
+  },
+  routeMetrics: {
+    flex: 1,
+    color: colors.text,
+  },
+  routeSource: {
+    color: colors.textSubtle,
+  },
+  routePending: {
+    flex: 1,
+    color: colors.textMuted,
+  },
+  routeNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceMuted,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
+  routeNoticeText: {
+    flex: 1,
+    color: colors.text,
+  },
+  retry: {
+    color: colors.accent,
+    fontWeight: '600',
   },
   attribution: {
     fontSize: 10,

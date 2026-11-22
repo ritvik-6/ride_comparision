@@ -6,6 +6,7 @@ import {
   type PressEvent,
   type PressEventWithFeatures,
 } from '@maplibre/maplibre-react-native';
+import type { LineString } from 'geojson';
 import { useMemo, type Ref } from 'react';
 import { StyleSheet, type NativeSyntheticEvent } from 'react-native';
 
@@ -25,6 +26,7 @@ import {
   PendingMarker,
   PickupMarker,
 } from './MapMarkers';
+import { RoutePolyline } from './RoutePolyline';
 
 export interface MapCanvasProps {
   /** The style finished loading and the map can be shown. */
@@ -41,6 +43,8 @@ export interface MapCanvasProps {
   destination: MapLocation | null;
   /** Tapped point whose address is still being resolved. */
   pendingPoint: Coordinates | null;
+  /** Road geometry of the calculated route, drawn beneath the markers. */
+  routeGeometry: LineString | null;
   /** The field a tap or search will fill; its marker is highlighted. */
   activeField: LocationField;
   /** Lets the screen move the camera to a searched place. */
@@ -68,6 +72,7 @@ export function MapCanvas({
   pickup,
   destination,
   pendingPoint,
+  routeGeometry,
   activeField,
   cameraRef,
   topInset,
@@ -144,6 +149,8 @@ export function MapCanvas({
         minZoom={MAP_MIN_ZOOM}
         maxZoom={MAP_MAX_ZOOM}
       />
+
+      {routeGeometry ? <RoutePolyline geometry={routeGeometry} /> : null}
 
       {showPickup && pickup ? (
         <Marker

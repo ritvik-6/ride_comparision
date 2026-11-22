@@ -172,29 +172,44 @@ Cab tiers, including a tier a provider does not serve (`"available": false`).
 - **Deterministic.** The same `pickup.id`/`destination.id` pair always returns
   the same estimates, and they match `src/services/fares/demoFares.ts` in the app
   exactly.
+- **Route-aware.** The optional `route` object carries the road distance and
+  driving time the app measured with its routing service. When it is present the
+  same offer table is priced from that distance (and the sample pickup wait grows
+  with the duration), so a longer trip costs more. Without it, the id-keyed
+  sample variation above is used — an older client gets exactly the payload it
+  always did.
 - **Coordinates are inert.** `coordinates` is optional, validated when present,
-  and echoed back; it never changes a fare, because nothing here measures
-  distance.
+  and echoed back; it never changes a fare on its own. Only the measured `route`
+  does, and it is never derived from coordinates on the server.
 - **Validation.** A `422` with FastAPI's `detail` array is returned for blank or
   whitespace-only `id`/`name`/`address`, out-of-range coordinates, a
-  half-supplied `latitude`/`longitude` pair, or a missing `pickup`/`destination`.
+  half-supplied `latitude`/`longitude` pair, an implausible `route`
+  (`distanceKm` outside `(0, 500]`, `durationMinutes` outside `(0, 1440]`), or a
+  missing `pickup`/`destination`.
 
-Request (the same fields the app keeps in its `Place` type):
+Request (the same fields the app keeps in its `Place` type, plus the measured
+route the map calculated):
 
 ```json
 {
   "pickup": {
     "id": "hitech-city",
     "name": "Hitech City",
-    "address": "HITEC City, Madhapur, Hyderabad"
+    "address": "HITEC City, Madhapur, Hyderabad",
+    "coordinates": { "latitude": 17.4435, "longitude": 78.3772 }
   },
   "destination": {
     "id": "airport",
     "name": "Rajiv Gandhi International Airport",
-    "address": "Shamshabad, Hyderabad"
-  }
+    "address": "Shamshabad, Hyderabad",
+    "coordinates": { "latitude": 17.2403, "longitude": 78.4294 }
+  },
+  "route": { "distanceKm": 28.6, "durationMinutes": 46 }
 }
 ```
+
+`route` is optional; omit it (or send `null`) to get the id-keyed sample
+variation instead.
 
 Response `200` (trimmed to three of the nine offers):
 
@@ -290,6 +305,10 @@ node backend/tests/fixtures/generate_demo_fares_parity.mjs
 
 The generator uses the repo's installed `typescript` package to transpile the
 app file, so run `npm install` first if `node_modules` is missing.
+
+The fixture covers the id-keyed path, which is unchanged. Route-based pricing is
+a separate branch inside `get_demo_fare_comparison` and has no TypeScript
+counterpart to disagree with; `tests/test_route_fares.py` covers it.
 
 ## Run the tests
 

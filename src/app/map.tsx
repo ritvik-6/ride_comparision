@@ -23,6 +23,7 @@ import {
 } from '@/constants/map';
 import { useCurrentLocation } from '@/hooks/useCurrentLocation';
 import { usePlaceSuggestions } from '@/hooks/usePlaceSuggestions';
+import { useRoutePlan } from '@/hooks/useRoutePlan';
 import { getGeocodingProvider } from '@/services/geocoding';
 import { lookupPoint } from '@/services/geocoding/lookupPoint';
 import {
@@ -30,10 +31,12 @@ import {
   readGrantedCurrentPlace,
 } from '@/services/location/currentLocation';
 import { colors, layout, spacing } from '@/theme';
+import { OSRM_ATTRIBUTION } from '@/services/routing';
 import type { Coordinates, LocationField, MapLocation } from '@/types';
 import { toComparisonParams } from '@/utils/comparisonRoute';
 import { fromPlace, toPlace } from '@/utils/mapLocations';
 import { decideSelection } from '@/utils/mapSelection';
+import { boundsOfLineString } from '@/utils/routeBounds';
 
 type MapStatus = 'loading' | 'ready' | 'error';
 type PinStatus = 'idle' | 'resolving' | 'error';
@@ -79,6 +82,9 @@ export default function MapScreen() {
   const markerPressAt = useRef(0);
 
   const gpsChecked = useRef(false);
+
+  // The road route for the current pair; `null` until it is calculated.
+  const route = useRoutePlan(pickup, destination);
 
   const {
     status: locatingStatus,
@@ -298,6 +304,11 @@ export default function MapScreen() {
     flyTo(location, MAP_SELECTED_ZOOM - 2);
   }, [commitSelection, flyTo, requestLocation]);
 
+  /** Identity of the route the camera was last fitted to. */
+  const fittedRoute = useRef<string | null>(null);
+  /** Latest panel height, read inside the fit effect without re-running it. */
+  const panelHeightRef = useRef(0);
+
   const handleClear = useCallback(() => {
     pinRequest.current?.abort();
     setPickup(null);
@@ -308,8 +319,41 @@ export default function MapScreen() {
     setPendingPoint(null);
     setPinStatus('idle');
     setPinMessage('');
+    // The camera goes back to the city, so the next route may frame itself
+    // again even if it is the same pair of points.
+    fittedRoute.current = null;
     flyTo(HYDERABAD_CENTRE, HYDERABAD_CITY_ZOOM);
   }, [flyTo]);
+
+  useEffect(() => {
+    panelHeightRef.current = panelHeight;
+  }, [panelHeight]);
+
+  /** Frames the whole route while keeping both markers clear of the panel. */
+  useEffect(() => {
+    if (!route.plan) {
+      return;
+    }
+
+    const bounds = boundsOfLineString(route.plan.geometry);
+    const identity = `${bounds?.join(',') ?? ''}@${route.plan.distanceKm}`;
+
+    // A panel resize must not re-fit the map under the rider's hands.
+    if (!bounds || fittedRoute.current === identity) {
+      return;
+    }
+
+    fittedRoute.current = identity;
+    cameraRef.current?.fitBounds(bounds, {
+      padding: {
+        top: insets.top + 110,
+        right: spacing['2xl'],
+        bottom: panelHeightRef.current + spacing.lg,
+        left: spacing['2xl'],
+      },
+      duration: 800,
+    });
+  }, [route.plan, insets.top]);
 
   const handleRegionChange = useCallback((centre: Coordinates) => {
     setBias((current) =>
@@ -326,9 +370,15 @@ export default function MapScreen() {
 
     router.push({
       pathname: '/compare',
-      params: toComparisonParams(toPlace(pickup), toPlace(destination)),
+      // Road metrics travel with the route so fares are priced on real driving
+      // distance. When routing failed they are omitted, never guessed.
+      params: toComparisonParams(
+        toPlace(pickup),
+        toPlace(destination),
+        route.plan,
+      ),
     });
-  }, [destination, pickup]);
+  }, [destination, pickup, route.plan]);
 
   // MapLibre's React Native renderer has no web implementation.
   if (Platform.OS === 'web') {
@@ -365,6 +415,7 @@ export default function MapScreen() {
         pickup={pickup}
         destination={destination}
         pendingPoint={pendingPoint}
+        routeGeometry={route.plan?.geometry ?? null}
         activeField={mode}
         cameraRef={cameraRef}
         topInset={insets.top}
@@ -399,6 +450,12 @@ export default function MapScreen() {
                 onConfirm={handleConfirm}
                 bottomInset={insets.bottom}
                 attribution={MAP_ATTRIBUTION}
+                route={route.plan}
+                routeStatus={route.status}
+                routeError={route.error}
+                canRetryRoute={route.canRetry}
+                onRetryRoute={route.retry}
+                routingAttribution={OSRM_ATTRIBUTION}
                 onHeightChange={setPanelHeight}
               />
             ) : (

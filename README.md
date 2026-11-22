@@ -64,7 +64,15 @@ src/
     photon.ts           # Photon adapter: fetch, timeout, cancellation, cache
     index.ts            # getGeocodingProvider() — the single swap point
   services/location/currentLocation.ts # expo-location permission + geocoding
+  services/routing/
+    types.ts            # RoutingProvider interface + error kinds and copy
+    osrmMapping.ts      # Pure OSRM URL building and response parsing
+    osrm.ts             # OSRM adapter: fetch, timeout, cancellation
+    index.ts            # getRoutingProvider() — the single swap point
+  hooks/useRoutePlan.ts # Calculates the driving route for the current pair
   utils/mapLocations.ts # MapLocation ⇄ Place conversion
+  utils/routeMetrics.ts # Route metric validation and formatting
+  utils/routeBounds.ts  # Bounding box used to frame the route
   hooks/usePlaceSuggestions.ts # Debounced autocomplete state
   services/fares/
     faresContract.ts    # Request mapping, response validation, error copy
@@ -114,6 +122,7 @@ plain text — never put secrets there.
 | --- | --- |
 | `EXPO_PUBLIC_API_BASE_URL` | Fares backend origin, e.g. `http://10.0.2.2:8000`; empty by default |
 | `EXPO_PUBLIC_GEOCODING_BASE_URL` | Optional geocoding origin; defaults to the public Photon instance |
+| `EXPO_PUBLIC_ROUTING_BASE_URL` | Optional routing origin; defaults to the public OSRM server |
 | `EXPO_PUBLIC_APP_ENV` | `development` / `production` label |
 
 Read them through `src/config/env.ts` (`env.apiBaseUrl`, `isApiConfigured`) rather
@@ -155,6 +164,33 @@ proxy is a change to one file plus an adapter implementing `GeocodingProvider`
 
 Public Nominatim is deliberately not used — its usage policy forbids
 autocomplete, and this app needs typeahead.
+
+## Route calculation and drawing
+
+Once both ends are chosen, `useRoutePlan` asks the routing service for a driving
+route and the map draws it. The route is recalculated whenever pickup or
+destination changes, and the camera is fitted to the whole geometry with padding
+that keeps both markers clear of the floating panel.
+
+| Aspect | Detail |
+| --- | --- |
+| Provider | **[OSRM](https://project-osrm.org/)** public demo server, `router.project-osrm.org` |
+| Key required | **No** |
+| Usage policy | Free shared service; the project asks for light use and throttles abuse. No availability guarantee |
+| Commercial use | Not suitable as-is: self-host OSRM and set `EXPO_PUBLIC_ROUTING_BASE_URL` |
+
+One request is sent per completed route — nothing while an end is still being
+chosen, nothing on camera moves, and the in-flight request is aborted when the
+route changes. Requests time out after 9 seconds.
+
+Loading, timeout, network failure, an unroutable pair and a malformed response
+each have their own message in the route panel. **Nothing ever substitutes a
+straight-line distance or a made-up duration**: if routing fails, no geometry is
+drawn, `route` is omitted from the fare request, and both the map panel and the
+comparison screen say the fares are not based on a driving distance.
+
+Swapping the provider means writing one adapter for `RoutingProvider` and
+changing `src/services/routing/index.ts`; nothing in the UI knows about OSRM.
 
 ### GPS behaviour
 
@@ -229,6 +265,13 @@ Notes:
 `apiRequest` → `POST /api/v1/fares/compare` → validated by `faresContract` →
 `rankFareEstimates` (filters, sorting, cheapest/fastest badges).
 
+The measured road route travels with the trip: `/map` passes `routeDistanceKm`
+and `routeDurationMinutes` to `/compare` as router params, and the fare request
+carries them as an optional `route` object. The backend prices its demo offers
+from that distance and duration; when the route is missing the field is omitted
+and the backend falls back to its previous id-keyed sample variation. Either way
+the numbers are **RideCompare demo estimates**, never live provider quotes.
+
 Everything visual — badges, sort control, category chips, unavailable rows,
 provider hand-off links and the demo-estimates disclosure — is unchanged and
 operates on whatever the server returns.
@@ -241,12 +284,14 @@ against (`backend/tests/fixtures/`), so the two cannot drift.
 
 - `npx tsc --noEmit` — clean
 - `npx expo lint` — clean
-- `npm test` — 40 Node tests (link URLs, fare contract mapping/validation/errors,
-  map-location conversion, Photon URL building and GeoJSON parsing)
+- `npm test` — 77 Node tests (link URLs, fare contract mapping/validation/errors,
+  map-location conversion, map tap extraction, Photon and OSRM URL building and
+  response parsing, route metric validation and camera framing)
 - `npx expo export --platform android` — bundles
-- `backend: pytest` — 76 tests
+- `backend: pytest` — 222 tests
 - Request mapping and response parsing exercised against the running backend
   (`HTTP 200`, nine estimates, unavailable Rapido cab preserved)
 - Not yet exercised on an emulator or device: the in-app loading, error and
-  retry states, map tile rendering, map tap selection and the live Photon
-  requests (the mapping is unit-tested, the network path is not)
+  retry states, map tile rendering, map tap selection, route drawing and camera
+  fitting, and the live Photon/OSRM requests (their mapping is unit-tested, the
+  network path is not)

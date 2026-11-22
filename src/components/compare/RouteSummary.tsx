@@ -1,17 +1,25 @@
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Card } from '@/components/ui/Card';
 import { colors, radius, spacing } from '@/theme';
-import type { Place } from '@/types';
+import type { Place, RouteMetrics } from '@/types';
+import { formatDistance, formatDuration } from '@/utils/routeMetrics';
 
 export interface RouteSummaryProps {
   pickup: Place;
   destination: Place;
+  /** Measured road route, or `null` when it could not be calculated. */
+  route?: RouteMetrics | null;
 }
 
 /** The selected trip, restated at the top of the comparison screen. */
-export function RouteSummary({ pickup, destination }: RouteSummaryProps) {
+export function RouteSummary({
+  pickup,
+  destination,
+  route = null,
+}: RouteSummaryProps) {
   return (
     <Card style={styles.card}>
       <AppText variant="label">Your route</AppText>
@@ -51,6 +59,21 @@ export function RouteSummary({ pickup, destination }: RouteSummaryProps) {
           </View>
         </View>
       </View>
+
+      {route ? (
+        <View style={styles.metrics}>
+          <Ionicons name="git-branch-outline" size={15} color={colors.accent} />
+          <AppText variant="caption" style={styles.metricsText}>
+            {formatDistance(route.distanceKm)} ·{' '}
+            {formatDuration(route.durationMinutes)} driving
+          </AppText>
+        </View>
+      ) : (
+        <AppText variant="caption" style={styles.metricsText}>
+          No road route for this trip, so fares are not based on a driving
+          distance.
+        </AppText>
+      )}
     </Card>
   );
 }
@@ -103,5 +126,17 @@ const styles = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
     backgroundColor: colors.border,
     marginVertical: spacing.md,
+  },
+  metrics: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingTop: spacing.md,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+  },
+  metricsText: {
+    flex: 1,
+    color: colors.textMuted,
   },
 });

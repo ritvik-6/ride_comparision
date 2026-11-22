@@ -12,5 +12,7 @@ export type {
 export { MapStatusOverlay } from './MapStatusOverlay';
 export type { MapStatusOverlayProps } from './MapStatusOverlay';
 export { DestinationMarker, PickupMarker } from './MapMarkers';
+export { RoutePolyline } from './RoutePolyline';
+export type { RoutePolylineProps } from './RoutePolyline';
 export { RouteSummaryPanel } from './RouteSummaryPanel';
 export type { RouteSummaryPanelProps } from './RouteSummaryPanel';
