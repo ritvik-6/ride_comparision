@@ -6,6 +6,7 @@ import { BottomNav, Screen } from '@/components';
 import {
   CurrentLocationButton,
   HomeHeader,
+  PlanOnMapCard,
   ProviderSection,
   RecentDestinations,
   RideSearchCard,
@@ -53,6 +54,14 @@ export default function HomeScreen() {
     clearFeedback();
   };
 
+  const handleChooseOnMap = () => {
+    // Nothing is lost by leaving: selections live in state and this screen stays
+    // mounted underneath the map route.
+    route.dismissSuggestions();
+    Keyboard.dismiss();
+    router.push('/map');
+  };
+
   const handleCompare = () => {
     const message = validateRoute(route.pickup, route.destination);
     const pickup = route.pickup.place;
@@ -79,6 +88,8 @@ export default function HomeScreen() {
       <Screen contentStyle={styles.content}>
         <HomeHeader />
 
+        <PlanOnMapCard onPress={handleChooseOnMap} />
+
         <RideSearchCard
           pickup={route.pickup}
           destination={route.destination}
@@ -91,6 +102,7 @@ export default function HomeScreen() {
           onClearField={route.clearField}
           onSwap={handleSwap}
           onCompare={handleCompare}
+          onChooseOnMap={handleChooseOnMap}
         />
 
         <CurrentLocationButton onPlaceSelected={handleUseCurrentLocation} />

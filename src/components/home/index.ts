@@ -3,6 +3,8 @@ export { HomeHeader } from './HomeHeader';
 export { LocationInput } from './LocationInput';
 export type { LocationInputProps } from './LocationInput';
 export { LocationSuggestions } from './LocationSuggestions';
+export { PlanOnMapCard } from './PlanOnMapCard';
+export type { PlanOnMapCardProps } from './PlanOnMapCard';
 export type { LocationSuggestionsProps } from './LocationSuggestions';
 export { ProviderSection } from './ProviderSection';
 export { RecentDestinations } from './RecentDestinations';
