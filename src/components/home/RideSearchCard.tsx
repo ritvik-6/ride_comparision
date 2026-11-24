@@ -29,8 +29,6 @@ export interface RideSearchCardProps {
   onClearField: (field: LocationField) => void;
   onSwap: () => void;
   onCompare: () => void;
-  /** Opens the interactive map screen. */
-  onChooseOnMap: () => void;
 }
 
 /**
@@ -49,7 +47,6 @@ export function RideSearchCard({
   onClearField,
   onSwap,
   onCompare,
-  onChooseOnMap,
 }: RideSearchCardProps) {
   const destinationRef = useRef<TextInputInstance>(null);
 
@@ -117,23 +114,6 @@ export function RideSearchCard({
           style={({ pressed }) => [styles.swap, pressed && styles.swapPressed]}
         >
           <Ionicons name="swap-vertical" size={20} color={colors.text} />
-        </Pressable>
-      </View>
-
-      <View style={styles.mapRow}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Choose location on map"
-          accessibilityHint="Opens a map you can browse to pick your route."
-          onPress={onChooseOnMap}
-          android_ripple={{ color: 'rgba(11, 15, 13, 0.06)' }}
-          style={({ pressed }) => [styles.mapAction, pressed && styles.mapPressed]}
-        >
-          <Ionicons name="map-outline" size={16} color={colors.accent} />
-          <AppText variant="caption" style={styles.mapLabel}>
-            Choose on map
-          </AppText>
-          <Ionicons name="chevron-forward" size={14} color={colors.textSubtle} />
         </Pressable>
       </View>
 
@@ -254,27 +234,6 @@ const styles = StyleSheet.create({
   },
   swapPressed: {
     backgroundColor: colors.surfaceMuted,
-  },
-  mapRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: -spacing.xs,
-  },
-  mapAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    minHeight: 40,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.pill,
-    backgroundColor: colors.accentSoft,
-    overflow: 'hidden',
-  },
-  mapPressed: {
-    opacity: 0.85,
-  },
-  mapLabel: {
-    color: colors.text,
   },
   message: {
     flexDirection: 'row',

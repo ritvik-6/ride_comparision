@@ -102,7 +102,6 @@ export default function HomeScreen() {
           onClearField={route.clearField}
           onSwap={handleSwap}
           onCompare={handleCompare}
-          onChooseOnMap={handleChooseOnMap}
         />
 
         <CurrentLocationButton onPlaceSelected={handleUseCurrentLocation} />
