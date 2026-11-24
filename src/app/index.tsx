@@ -12,15 +12,19 @@ import {
   RecentDestinations,
   RideSearchCard,
 } from '@/components/home';
-import { HYDERABAD_LOCATIONS, RECENT_DESTINATIONS } from '@/constants';
+import { HYDERABAD_LOCATIONS } from '@/constants';
+import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { useRouteSearch } from '@/hooks/useRouteSearch';
+import type { RecentLocation } from '@/services/recentSearches';
 import { colors, spacing } from '@/theme';
 import type { LocationField, Place } from '@/types';
 import { toComparisonParams } from '@/utils/comparisonRoute';
+import { fromPlace, toPlace } from '@/utils/mapLocations';
 import { validateRoute } from '@/utils/routeValidation';
 
 export default function HomeScreen() {
   const route = useRouteSearch(HYDERABAD_LOCATIONS);
+  const recents = useRecentSearches();
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -36,16 +40,34 @@ export default function HomeScreen() {
 
   const handleSelectPlace = (field: LocationField, place: Place) => {
     route.selectPlace(field, place);
+
+    // Only real coordinates are stored: the mock dataset has none, and a recent
+    // must never carry an invented position.
+    const location = fromPlace(place, 'search');
+
+    if (location) {
+      recents.add(location);
+    }
+
     clearFeedback();
   };
 
-  const handleSelectRecent = (place: Place) => {
-    route.selectPlace('destination', place);
+  const handleSelectRecent = (location: RecentLocation) => {
+    route.selectPlace('destination', toPlace(location));
+    // Tapping a recent makes it the most recent again.
+    recents.add(location);
     clearFeedback();
   };
 
   const handleUseCurrentLocation = (place: Place) => {
     route.selectPlace('pickup', place);
+
+    const location = fromPlace(place, 'gps');
+
+    if (location) {
+      recents.add(location);
+    }
+
     setError(null);
     setNotice('Pickup set from your current location.');
   };
@@ -110,8 +132,9 @@ export default function HomeScreen() {
         <HomeBenefits />
 
         <RecentDestinations
-          places={RECENT_DESTINATIONS}
+          locations={recents.recents}
           onSelect={handleSelectRecent}
+          onClear={recents.clear}
         />
 
         <ProviderSection />

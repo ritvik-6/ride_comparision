@@ -5,7 +5,6 @@ export {
   CURRENCY_SYMBOL,
   LOCALE,
 } from './app';
-export { RECENT_DESTINATIONS } from './destinations';
 export { FARE_SORT_MODES, RIDE_CATEGORY_FILTERS } from './fareSort';
 export type {
   FareSortModeMeta,

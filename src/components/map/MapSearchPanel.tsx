@@ -15,6 +15,7 @@ import {
   MIN_SEARCH_LENGTH,
   type SuggestionsStatus,
 } from '@/hooks/usePlaceSuggestions';
+import type { RecentLocation } from '@/services/recentSearches';
 import {
   colors,
   fontSize,
@@ -46,6 +47,10 @@ export interface MapSearchPanelProps {
   canRetry: boolean;
   onRetry: () => void;
   onSelectSuggestion: (location: MapLocation) => void;
+  /** Recently selected places, newest first, shared with the home screen. */
+  recents: readonly RecentLocation[];
+  onSelectRecent: (location: RecentLocation) => void;
+  onClearRecents: () => void;
   onUseCurrentLocation: () => void;
   locating: boolean;
   locationError: CurrentLocationNotice | null;
@@ -147,6 +152,9 @@ export function MapSearchPanel({
   canRetry,
   onRetry,
   onSelectSuggestion,
+  recents,
+  onSelectRecent,
+  onClearRecents,
   onUseCurrentLocation,
   locating,
   locationError,
@@ -168,6 +176,9 @@ export function MapSearchPanel({
     status === 'ready' &&
     suggestions.length === 0 &&
     trimmedLength >= MIN_SEARCH_LENGTH;
+  // Recents are only useful while the rider is not already typing a query.
+  const showRecents =
+    trimmedLength === 0 && status === 'idle' && recents.length > 0;
 
   // Only focus on an explicit request, so opening the map never pops a keyboard.
   useEffect(() => {
@@ -305,6 +316,75 @@ export function MapSearchPanel({
         </View>
       ) : null}
 
+      {showRecents ? (
+        <View style={styles.recents}>
+          <View style={styles.recentsHeader}>
+            <AppText variant="label" style={styles.recentsTitle}>
+              Recent searches
+            </AppText>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Clear recent searches"
+              onPress={onClearRecents}
+              hitSlop={8}
+            >
+              <AppText variant="caption" style={styles.link}>
+                Clear
+              </AppText>
+            </Pressable>
+          </View>
+
+          <ScrollView
+            style={[
+              styles.recentsList,
+              keyboardVisible ? styles.recentsCompact : null,
+            ]}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled
+            showsVerticalScrollIndicator
+            accessibilityLabel="Recent searches"
+          >
+            {recents.map((location, index) => (
+              <Pressable
+                key={
+                  location.placeId ??
+                  `${location.latitude},${location.longitude}`
+                }
+                accessibilityRole="button"
+                accessibilityLabel={`${location.displayName}, ${location.formattedAddress}`}
+                accessibilityHint={`Uses this place as the ${
+                  mode === 'pickup' ? 'pickup' : 'destination'
+                } location.`}
+                onPress={() => onSelectRecent(location)}
+                style={({ pressed }) => [
+                  styles.suggestion,
+                  index > 0 && styles.suggestionDivider,
+                  pressed && styles.suggestionPressed,
+                ]}
+              >
+                <View style={styles.suggestionIcon}>
+                  <Ionicons
+                    name="time-outline"
+                    size={16}
+                    color={colors.textMuted}
+                  />
+                </View>
+
+                <View style={styles.suggestionCopy}>
+                  <AppText variant="body" numberOfLines={1}>
+                    {location.displayName}
+                  </AppText>
+                  <AppText variant="caption" numberOfLines={1}>
+                    {location.formattedAddress}
+                  </AppText>
+                </View>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+
       {status === 'loading' ? (
         <View style={styles.stateRow} accessibilityLiveRegion="polite">
           <ActivityIndicator size="small" color={colors.accent} />
@@ -392,7 +472,7 @@ export function MapSearchPanel({
         </ScrollView>
       ) : null}
 
-      {status === 'idle' && trimmedLength === 0 ? (
+      {status === 'idle' && trimmedLength === 0 && recents.length === 0 ? (
         <View style={styles.stateRow}>
           <Ionicons name="hand-left-outline" size={15} color={colors.textSubtle} />
           <AppText variant="caption" style={styles.stateText}>
@@ -551,6 +631,25 @@ const styles = StyleSheet.create({
   },
   stateText: {
     flex: 1,
+  },
+  recents: {
+    gap: spacing.xs,
+  },
+  recentsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xs,
+  },
+  recentsTitle: {
+    fontSize: 11,
+  },
+  recentsList: {
+    maxHeight: 168,
+  },
+  recentsCompact: {
+    maxHeight: 112,
   },
   suggestions: {
     maxHeight: 204,

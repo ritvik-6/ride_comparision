@@ -24,6 +24,7 @@ import {
 import { useCurrentLocation } from '@/hooks/useCurrentLocation';
 import { useKeyboardInset } from '@/hooks/useKeyboardInset';
 import { usePlaceSuggestions } from '@/hooks/usePlaceSuggestions';
+import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { useRoutePlan } from '@/hooks/useRoutePlan';
 import { getGeocodingProvider } from '@/services/geocoding';
 import { lookupPoint } from '@/services/geocoding/lookupPoint';
@@ -88,6 +89,9 @@ export default function MapScreen() {
 
   // The road route for the current pair; `null` until it is calculated.
   const route = useRoutePlan(pickup, destination);
+
+  // Shared with the home screen, so both surfaces list the same recents.
+  const { recents, add: addRecent, clear: clearRecents } = useRecentSearches();
 
   const {
     status: locatingStatus,
@@ -192,12 +196,15 @@ export default function MapScreen() {
       });
       setMode(decision.nextMode);
 
+      // Every committed selection is a real choice of place, so it is recorded.
+      addRecent(location);
+
       if (decision.routeComplete) {
         setSearchOpen(false);
         setQuery('');
       }
     },
-    [destination, pickup],
+    [addRecent, destination, pickup],
   );
 
   /**
@@ -276,6 +283,23 @@ export default function MapScreen() {
       setPinStatus('idle');
 
       // Continue straight into the other field's search.
+      if (!other) {
+        setFocusToken((current) => current + 1);
+      }
+    },
+    [commitSelection, destination, flyTo, mode, pickup],
+  );
+
+  /** Uses a stored recent as the active end of the route. */
+  const handleSelectRecent = useCallback(
+    (location: MapLocation) => {
+      const other = mode === 'pickup' ? destination : pickup;
+
+      commitSelection(mode, location);
+      flyTo(location, MAP_SELECTED_ZOOM);
+      setPendingPoint(null);
+      setPinStatus('idle');
+
       if (!other) {
         setFocusToken((current) => current + 1);
       }
@@ -492,6 +516,9 @@ export default function MapScreen() {
                 canRetry={suggestionsCanRetry}
                 onRetry={retry}
                 onSelectSuggestion={handleSelectSuggestion}
+                recents={recents}
+                onSelectRecent={handleSelectRecent}
+                onClearRecents={clearRecents}
                 onUseCurrentLocation={handleUseCurrentLocation}
                 locating={locating}
                 locationError={
