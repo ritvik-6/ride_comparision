@@ -59,7 +59,17 @@ export function RideSearchCard({
 
   return (
     <Card style={styles.card}>
-      <AppText variant="label">Search by name</AppText>
+      <View style={styles.header}>
+        <View style={styles.headerIcon}>
+          <Ionicons name="search" size={17} color={colors.accent} />
+        </View>
+        <View style={styles.headerCopy}>
+          <AppText variant="heading">Search by name</AppText>
+          <AppText variant="caption">
+            Enter your pickup and destination
+          </AppText>
+        </View>
+      </View>
 
       <View style={styles.routeRow}>
         <View style={styles.routeBox}>
@@ -161,7 +171,26 @@ export function RideSearchCard({
 
 const styles = StyleSheet.create({
   card: {
-    gap: spacing.lg,
+    gap: spacing.xl,
+    padding: spacing.lg,
+    borderRadius: radius['2xl'],
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  headerIcon: {
+    width: 42,
+    height: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.md,
+    backgroundColor: colors.accentSoft,
+  },
+  headerCopy: {
+    flex: 1,
+    gap: spacing.xs,
   },
   routeRow: {
     flexDirection: 'row',
@@ -171,8 +200,8 @@ const styles = StyleSheet.create({
   routeBox: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: radius.lg,
+    backgroundColor: '#F7F9F8',
+    borderRadius: radius.xl,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
     paddingHorizontal: spacing.md,

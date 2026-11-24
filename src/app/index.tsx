@@ -5,6 +5,7 @@ import { Keyboard, StyleSheet, View } from 'react-native';
 import { BottomNav, Screen } from '@/components';
 import {
   CurrentLocationButton,
+  HomeBenefits,
   HomeHeader,
   PlanOnMapCard,
   ProviderSection,
@@ -105,6 +106,8 @@ export default function HomeScreen() {
         />
 
         <CurrentLocationButton onPlaceSelected={handleUseCurrentLocation} />
+
+        <HomeBenefits />
 
         <RecentDestinations
           places={RECENT_DESTINATIONS}

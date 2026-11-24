@@ -1,4 +1,5 @@
 export { CurrentLocationButton } from './CurrentLocationButton';
+export { HomeBenefits } from './HomeBenefits';
 export { HomeHeader } from './HomeHeader';
 export { LocationInput } from './LocationInput';
 export type { LocationInputProps } from './LocationInput';

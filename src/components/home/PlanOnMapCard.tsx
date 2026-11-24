@@ -25,12 +25,18 @@ export function PlanOnMapCard({ onPress }: PlanOnMapCardProps) {
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
-      <View style={styles.icon}>
-        <Ionicons name="map" size={20} color={colors.accent} />
-      </View>
+      <View style={styles.orbLarge} />
+      <View style={styles.orbSmall} />
 
       <View style={styles.copy}>
-        <AppText variant="subtitle" style={styles.title}>
+        <View style={styles.eyebrow}>
+          <View style={styles.eyebrowDot} />
+          <AppText variant="label" style={styles.eyebrowText}>
+            MAP-FIRST PLANNING
+          </AppText>
+        </View>
+
+        <AppText variant="heading" style={styles.title}>
           Plan your ride
         </AppText>
         <AppText variant="caption" style={styles.caption}>
@@ -38,47 +44,126 @@ export function PlanOnMapCard({ onPress }: PlanOnMapCardProps) {
         </AppText>
       </View>
 
-      <Ionicons name="arrow-forward" size={18} color={colors.textInverse} />
+      <View style={styles.artwork}>
+        <Ionicons
+          name="map-outline"
+          size={34}
+          color="rgba(255, 255, 255, 0.88)"
+        />
+        <View style={styles.mapPin}>
+          <Ionicons name="location" size={17} color={colors.accentPressed} />
+        </View>
+      </View>
+
+      <View style={styles.arrow}>
+        <Ionicons name="arrow-forward" size={18} color={colors.accentPressed} />
+      </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    minHeight: 68,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.xl,
-    backgroundColor: colors.accent,
+    position: 'relative',
+    justifyContent: 'center',
+    minHeight: 158,
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radius['2xl'],
+    backgroundColor: '#0A6845',
     overflow: 'hidden',
-    elevation: 3,
-    shadowColor: colors.accentPressed,
-    shadowOpacity: 0.28,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
+    shadowColor: '#06452D',
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 7 },
   },
   pressed: {
-    backgroundColor: colors.accentPressed,
-  },
-  icon: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
+    opacity: 0.94,
+    transform: [{ scale: 0.99 }],
   },
   copy: {
-    flex: 1,
-    gap: 2,
+    maxWidth: '72%',
+    gap: spacing.xs,
+  },
+  eyebrow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  eyebrowDot: {
+    width: 7,
+    height: 7,
+    borderRadius: radius.pill,
+    backgroundColor: '#8EE5B6',
+  },
+  eyebrowText: {
+    color: 'rgba(255, 255, 255, 0.78)',
+    fontSize: 10,
+    letterSpacing: 1,
   },
   title: {
     color: colors.textInverse,
+    fontSize: 21,
+    lineHeight: 27,
+  },
+  orbLarge: {
+    position: 'absolute',
+    top: -84,
+    right: -38,
+    width: 194,
+    height: 194,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255, 255, 255, 0.055)',
+  },
+  orbSmall: {
+    position: 'absolute',
+    right: 56,
+    bottom: -112,
+    width: 176,
+    height: 176,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255, 255, 255, 0.045)',
+  },
+  artwork: {
+    position: 'absolute',
+    top: 24,
+    right: 22,
+    width: 62,
+    height: 62,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  mapPin: {
+    position: 'absolute',
+    right: 3,
+    bottom: 1,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: '#B9F0D1',
+    borderWidth: 2,
+    borderColor: '#0A6845',
+  },
+  arrow: {
+    position: 'absolute',
+    right: spacing.xl,
+    bottom: spacing.xl,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: '#D7F5E3',
   },
   caption: {
-    color: 'rgba(255, 255, 255, 0.86)',
+    maxWidth: 210,
+    color: 'rgba(255, 255, 255, 0.78)',
+    lineHeight: 19,
   },
 });
