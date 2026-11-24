@@ -1,17 +1,28 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
+import { isRunningInExpoGo } from 'expo';
 import Constants from 'expo-constants';
 
 import { ExpoGoMapFallback } from '@/components/map/ExpoGoMapFallback';
 import { shouldUseExpoGoMapFallback } from '@/utils/mapRuntime';
 
-const MapLibreMapScreen = lazy(
-  () => import('@/screens/MapLibreMapScreen'),
-);
-
 export default function MapRoute() {
-  if (shouldUseExpoGoMapFallback(Constants.appOwnership)) {
+  const useExpoGoFallback = shouldUseExpoGoMapFallback({
+    isRunningInExpoGo: isRunningInExpoGo(),
+    executionEnvironment: Constants.executionEnvironment,
+    appOwnership: Constants.appOwnership,
+  });
+
+  if (useExpoGoFallback) {
     return <ExpoGoMapFallback />;
   }
+
+  return <StandaloneMapRoute />;
+}
+
+function StandaloneMapRoute() {
+  const [MapLibreMapScreen] = useState(() =>
+    lazy(() => import('@/screens/MapLibreMapRoute')),
+  );
 
   return (
     <Suspense fallback={null}>
