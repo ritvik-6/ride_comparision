@@ -91,6 +91,10 @@ export function RouteSummaryPanel({
   routingAttribution,
   onHeightChange,
 }: RouteSummaryPanelProps) {
+  const routePending = routeStatus === 'idle' || routeStatus === 'loading';
+  const compareLabel =
+    routeStatus === 'error' ? 'Compare without route' : 'Compare fares';
+
   return (
     <View
       style={[styles.sheet, { paddingBottom: bottomInset + spacing.lg }]}
@@ -169,12 +173,19 @@ export function RouteSummaryPanel({
       )}
 
       <AppButton
-        label="Compare fares"
+        label={compareLabel}
         onPress={onConfirm}
+        disabled={routePending}
         trailing={
           <Ionicons name="arrow-forward" size={18} color={colors.textInverse} />
         }
-        accessibilityHint="Opens the fare comparison for this route."
+        accessibilityHint={
+          routePending
+            ? 'Waits until the driving route has finished calculating.'
+            : routeStatus === 'error'
+              ? 'Opens the fare comparison without measured road distance.'
+              : 'Opens the fare comparison for this route.'
+        }
       />
 
       <AppText variant="caption" style={styles.attribution}>

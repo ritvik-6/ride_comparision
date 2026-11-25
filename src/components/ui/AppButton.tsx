@@ -20,6 +20,7 @@ export interface AppButtonProps {
   trailing?: ReactNode;
   style?: StyleProp<ViewStyle>;
   accessibilityHint?: string;
+  disabled?: boolean;
 }
 
 /** Full-width action button with a green primary and a quiet secondary style. */
@@ -30,6 +31,7 @@ export function AppButton({
   trailing,
   style,
   accessibilityHint,
+  disabled = false,
 }: AppButtonProps) {
   const isPrimary = variant === 'primary';
 
@@ -38,6 +40,8 @@ export function AppButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
       android_ripple={{
         color: isPrimary ? 'rgba(255, 255, 255, 0.18)' : 'rgba(11, 15, 13, 0.06)',
       }}
@@ -45,6 +49,7 @@ export function AppButton({
       style={({ pressed }) => [
         styles.base,
         isPrimary ? styles.primary : styles.secondary,
+        disabled ? styles.disabled : null,
         pressed ? styles.pressed : null,
         style,
       ]}
@@ -81,6 +86,9 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.94,
+  },
+  disabled: {
+    opacity: 0.5,
   },
   labelPrimary: {
     color: colors.textInverse,
